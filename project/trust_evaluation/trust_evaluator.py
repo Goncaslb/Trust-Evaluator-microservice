@@ -4,6 +4,7 @@ from utils.helpers import verify_did, validate_location
 # The ontology is defined here
 
 class TrustEvaluator:
+    
     def __init__(self, provider_weights, resource_weights, app_weights):
         self.provider_weights = provider_weights
         self.resource_weights = resource_weights

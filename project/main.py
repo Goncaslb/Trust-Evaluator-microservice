@@ -1,15 +1,13 @@
 from models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationProvider
-from models.trust_evaluator import TrustEvaluator
-from utils.config import PROVIDER_WEIGHTS, RESOURCE_WEIGHTS, APP_WEIGHTS
+from project.trust_evaluation.trust_evaluator import TrustEvaluator
 
 def main():
-    # Example stakeholders all with intial trust = 0
     
     # ProviderA is a simple example which will be trusted
-    providerA = ResourceProvider("Provider_A", 0, did="did:example:123", group='provider', compliance=1, historical_behavior=0.7, reputation=0.6, direct_trust=0.9)
+    providerA = ResourceProvider("Provider_A", did="did:example:123", compliance=1, historical_behavior=0.7, reputation=0.6, direct_trust=0.9)
     
-    # CapacityA is a resource provided from  providerA wich will also be trusted
-    capacityA = ResourceCapacity("Capacity_A", 0, did="did:example:456", group='resource', performance_metrics={"throughput": 0.8, "bandwidth": 0.7}, location=(46.05, 14.47), historical_behavior=0.8, contextual_fit=0.7, third_party_validation=0.6, reputation=0.65, direct_trust=0.8, provider='did:example:123')
+    # CapacityA is a resource provided from  providerA which will also be trusted
+    capacityA = ResourceCapacity("Capacity_A", did="did:example:456", performance={"throughput": 0.8, "bandwidth": 0.7}, location=(46.05, 14.47), historical_behavior=0.8, contextual_fit=0.7, third_party_validation=0.6, reputation=0.65, direct_trust=0.8, provider='did:example:123')
     
     # AppProviderX is an application provider that will be trusted
     app_providerX = ApplicationProvider("AppProvider_X", 0, did="did:example:789", group='app', compliance=1, location=(46.05, 14.47), reputation=0.65, direct_trust=0.85)
@@ -30,7 +28,7 @@ def main():
     
     a = evaluator.get_trusted_stakeholders()
     
-    # Now we simmulate that there was registered a worst performance of CapacityA so we want to see a diference  in the trust value
+    # Now we simmulate that there was registered a worst performance of CapacityA so we want to see a difference  in the trust value
     new_performance = {"throughput": 0.5, "bandwidth": 0.45}
     evaluator.update_attribute(capacityA, "performance_metrics", new_performance)
     

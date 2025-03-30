@@ -1,42 +1,98 @@
-class Stakeholder:
-    # I have added the name, the trust and the group
-    def __init__(self, name, trust, did, group): # can the group attribute be incorporated in the did?
-        self.name = name
-        self.trust = trust
-        self.did = did
-        self.group = group
+import uuid
+from typing import Optional
+from abc import ABC, abstractmethod
+from enum import IntEnum
 
-class ResourceProvider(Stakeholder): # or resource capacity provider
-    # no extra attribute added
-    def __init__(self, name, trust, did, group, compliance, historical_behavior, reputation, direct_trust):
-        super().__init__(name, trust, did, group)
-        self.compliance = compliance
-        self.historical_behavior = historical_behavior
-        self.reputation = reputation
-        self.direct_trust = direct_trust
-        self.weights = [0.3, 0.2, 0.2, 0.2, 0.1]
+from did import DID
+from attributes import IdentityVerification, \
+                       Reputation, \
+                       DirectTrust, \
+                       Compliance, \
+                       HistoricalBehavior, \
+                       Performance, \
+                       Location, \
+                       ContextualFit, \
+                       ThirdPartyValidation
 
-class ResourceCapacity(Stakeholder): # or resources
-    # added the provider attribute which is the did of the provider
-    def __init__(self, name, trust, did, group, performance_metrics, location, historical_behavior, contextual_fit, third_party_validation, reputation, direct_trust, provider):
-        super().__init__(name, trust, did, group)
-        self.performance_metrics = performance_metrics  # Dictionary of performance indicators that can be changed. At the end it will have to be of a specific format
-        self.location = location
-        self.historical_behavior = historical_behavior
-        self.contextual_fit = contextual_fit
-        self.third_party_validation = third_party_validation
-        self.reputation = reputation
-        self.direct_trust = direct_trust
-        self.provider = provider
-        self.weights = [0.2, 0.2, 0.15, 0.15, 0.1, 0.1, 0.05, 0.05]
+
+INITIAL_TRUST = 0
+
+
+class Entities(IntEnum):
+    """
+    Used for index of AttributeWeights. 
+    """
+    RESOURCE_PROVIDER = 0
+    RESOURCE_CAPACITY = 1
+    APPLICATION_PROVIDER = 2
+
+
+class Stakeholder(ABC):
+
+    # Each time a new uuid is generated
+    id: uuid.UUID = uuid.uuid4()
+
+    # Level in trust as a floating point number
+    trust: float = INITIAL_TRUST
+
+
+
+    def __init__(self, name: str, entity_idx: Entities, did_raw: str, reputation: float, direct_trust: float):
+
+        # Name of the stakeholder
+        self.name: str = name
+
+        # Type of entity converted to an integer (index)
+        self.entity_idx: Entities = entity_idx
+
+        # DID - Decentralized identifier
+        self.did: DID = DID(did_raw)
+
+        # 
+        self.identity_verification = IdentityVerification(entity_idx)
+
+        # 
+        self.reputation = Reputation(entity_idx, reputation)
+
+        # 
+        self.direct_trust = DirectTrust(entity_idx, direct_trust)
+
+    @abstractmethod
+    def calculate_trust(self):
+        pass
+
+
+class ResourceProvider(Stakeholder): # or Resource Capacity provider
+
+    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, compliance: float, historical_behavior: float):
+
+        super().__init__(name, did_raw, reputation, direct_trust)
+
+        self.compliance = Compliance(Entities.RESOURCE_PROVIDER)
+        self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_PROVIDER)
+
+
+class ResourceCapacity(Stakeholder): # or Resources
+
+    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, performance: float, location: float, historical_behavior: float, contextual_fit: float, third_party_validation: float, provider: ResourceProvider):
+
+        super().__init__(name, did_raw, reputation, direct_trust)
+
+        self.performance = Performance(Entities.RESOURCE_CAPACITY)
+        self.location = Location(Entities.RESOURCE_CAPACITY)
+        self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_CAPACITY)
+        self.contextual_fit = ContextualFit(Entities.RESOURCE_CAPACITY)
+        self.third_party_validation = ThirdPartyValidation(Entities.RESOURCE_CAPACITY)
+
+        self.provider: ResourceProvider = provider
+
 
 class ApplicationProvider(Stakeholder):
-    # no extra attribute added
-    def __init__(self, name, trust, did, group, compliance, location, reputation, direct_trust):
-        super().__init__(name, trust, did, group)
-        self.compliance = compliance
-        self.location = location
-        self.reputation = reputation
-        self.direct_trust = direct_trust
-        self.weights = [0.4, 0.2, 0.2, 0.1, 0.1]
+
+    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, compliance: float, location: float):
+
+        super().__init__(name, did_raw, reputation, direct_trust)
+
+        self.compliance = Compliance(Entities.APPLICATION_PROVIDER)
+        self.location = Location(Entities.APPLICATION_PROVIDER)
 
