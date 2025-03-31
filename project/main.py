@@ -1,21 +1,21 @@
 from models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationProvider
-from project.trust_evaluation.trust_evaluator import TrustEvaluator
+from trust_evaluation.trust_evaluator import TrustEvaluator
 
 def main():
     
     # ProviderA is a simple example which will be trusted
-    providerA = ResourceProvider("Provider_A", did="did:example:123", compliance=1, historical_behavior=0.7, reputation=0.6, direct_trust=0.9)
+    providerA = ResourceProvider(name="Provider_A", did_raw="did:example:123", compliance=1, historical_behavior=0.7, reputation=0.6, direct_trust=0.9)
     
     # CapacityA is a resource provided from  providerA which will also be trusted
-    capacityA = ResourceCapacity("Capacity_A", did="did:example:456", performance={"throughput": 0.8, "bandwidth": 0.7}, location=(46.05, 14.47), historical_behavior=0.8, contextual_fit=0.7, third_party_validation=0.6, reputation=0.65, direct_trust=0.8, provider='did:example:123')
+    capacityA = ResourceCapacity(name="Capacity_A", did_raw="did:example:456", performance={"throughput": 0.8, "bandwidth": 0.7}, location=(46.05, 14.47), historical_behavior=0.8, contextual_fit=0.7, third_party_validation=0.6, reputation=0.65, direct_trust=0.8, provider='did:example:123')
     
     # AppProviderX is an application provider that will be trusted
-    app_providerX = ApplicationProvider("AppProvider_X", 0, did="did:example:789", group='app', compliance=1, location=(46.05, 14.47), reputation=0.65, direct_trust=0.85)
+    app_providerX = ApplicationProvider(name="AppProvider_X", did_raw="did:example:789", compliance=1, location=(46.05, 14.47), reputation=0.65, direct_trust=0.85)
     
     # App provider that will not be trusted
-    bad_app_providerH = ApplicationProvider("AppProvider_H", 0, did="did:example:326", group='app', compliance=0.1, location=(46.05, 14.47), reputation=0.4, direct_trust=0.3)
+    bad_app_providerH = ApplicationProvider(name="AppProvider_H", did_raw="did:example:326", compliance=0.1, location=(46.05, 14.47), reputation=0.4, direct_trust=0.3)
     
-    evaluator = TrustEvaluator(PROVIDER_WEIGHTS, RESOURCE_WEIGHTS, APP_WEIGHTS)
+    evaluator = TrustEvaluator()
     stakeholders = [providerA, capacityA, app_providerX, bad_app_providerH]
     
     print("Initial Trust Scores and Evaluation:")
@@ -23,12 +23,10 @@ def main():
         evaluator.compute_trust(s)
         print(f"{s.name}: {s.trust:.4f}")
         evaluator.trust_evaluation(s)
-
-   
     
-    a = evaluator.get_trusted_stakeholders()
+    trusted_stakeholders = evaluator.get_trusted_stakeholders()
     
-    # Now we simmulate that there was registered a worst performance of CapacityA so we want to see a difference  in the trust value
+    '''# Now we simmulate that there was registered a worst performance of CapacityA so we want to see a difference  in the trust value
     new_performance = {"throughput": 0.5, "bandwidth": 0.45}
     evaluator.update_attribute(capacityA, "performance_metrics", new_performance)
     
@@ -56,7 +54,7 @@ def main():
         evaluator.compute_trust(s)
         evaluator.trust_evaluation(s)
     
-    a = evaluator.get_trusted_stakeholders()
+    a = evaluator.get_trusted_stakeholders()'''
 
     
 if __name__ == "__main__":

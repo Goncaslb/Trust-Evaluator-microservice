@@ -1,16 +1,14 @@
 import numpy as np
+
 from utils.helpers import verify_did, validate_location
+from models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationProvider
 
 # The ontology is defined here
 
 class TrustEvaluator:
     
-    def __init__(self, provider_weights, resource_weights, app_weights):
-        self.provider_weights = provider_weights
-        self.resource_weights = resource_weights
-        self.app_weights = app_weights
+    def __init__(self):
         self.trusted_stakeholders = []
-
 
     def get_trusted_stakeholders(self):
 
@@ -18,126 +16,131 @@ class TrustEvaluator:
         return self.trusted_stakeholders
         
     def compute_trust(self, stakeholder):
-        attributes = []
-        if stakeholder.group == 'provider':
+        attributes_trust = []
+        weights = []
+
+        if isinstance(stakeholder, ResourceProvider):
             # provider trust estimation 
             
             # did verification
-            if not (verify_did(stakeholder.did)):
-                setattr(stakeholder, 'trust', 0)
-                return 
+            stakeholder.identity_verification.calculate_trust()
+            weights.append(stakeholder.identity_verification.weight)
+            attributes_trust.append(stakeholder.identity_verification.trust)
             
             # compliance
-            # missing logic!!!!
-            attributes.append(stakeholder.compliance)
+            stakeholder.compliance.calculate_trust()
+            weights.append(stakeholder.compliance.weight)
+            attributes_trust.append(stakeholder.compliance.trust)
             
             # historical behaviour
-            # missing logic!!!!
-            attributes.append(stakeholder.historical_behavior)
+            stakeholder.historical_behavior.calculate_trust()
+            weights.append(stakeholder.historical_behavior.weight)
+            attributes_trust.append(stakeholder.historical_behavior.trust)
 
             # reputation
-            # missing logic!!!!
-            attributes.append(stakeholder.reputation)
+            stakeholder.reputation.calculate_trust()
+            weights.append(stakeholder.reputation.weight)
+            attributes_trust.append(stakeholder.reputation.trust)
 
             # direct trust
-            # missing logic!!!!
-            attributes.append(stakeholder.direct_trust)
+            stakeholder.direct_trust.calculate_trust()
+            weights.append(stakeholder.direct_trust.weight)
+            attributes_trust.append(stakeholder.direct_trust.trust)
 
-            # final weighted trust
-            setattr(stakeholder, 'trust', np.dot(self.provider_weights, attributes))
 
-        elif stakeholder.group == 'resource':
+        elif isinstance(stakeholder, ResourceCapacity):
             # resource trust estimation
 
             # did verification
-            if not (verify_did(stakeholder.did)):
-                setattr(stakeholder, 'trust', 0)
-                return 
+            stakeholder.identity_verification.calculate_trust()
+            weights.append(stakeholder.identity_verification.weight)
+            attributes_trust.append(stakeholder.identity_verification.trust)
             
             # provider trust
-            if not any(stakeholder.provider == trusted[1] for trusted in self.trusted_stakeholders):
-                setattr(stakeholder, 'trust', 0)
+            if not any(stakeholder.provider.did == trusted[1] for trusted in self.trusted_stakeholders):
+                stakeholder.trust = 0
                 return
             
             # location
-            if not validate_location(stakeholder.location):
-                setattr(stakeholder, 'trust', 0)
-                return
+            stakeholder.location.calculate_trust()
+            weights.append(stakeholder.location.weight)
+            attributes_trust.append(stakeholder.location.trust)
             
             # performance metrics
-            attributes.append(self.compute_performance(stakeholder))
+            stakeholder.performance.calculate_trust()
+            weights.append(stakeholder.performance.weight)
+            attributes_trust.append(stakeholder.performance.trust)
 
             # historical behaviour
-            # missing logic!!!!
-            attributes.append(stakeholder.historical_behavior)
+            stakeholder.historical_behavior.calculate_trust()
+            weights.append(stakeholder.historical_behavior.weight)
+            attributes_trust.append(stakeholder.historical_behavior.trust)
 
             # contextual fit
-            # missing logic!!!!
-            attributes.append(stakeholder.contextual_fit)
+            stakeholder.contextual_fit.calculate_trust()
+            weights.append(stakeholder.contextual_fit.weight)
+            attributes_trust.append(stakeholder.contextual_fit.trust)
 
             # third party validation
-            # missing logic!!!!
-            attributes.append(stakeholder.third_party_validation)
+            stakeholder.third_party_validation.calculate_trust()
+            weights.append(stakeholder.third_party_validation.weight)
+            attributes_trust.append(stakeholder.third_party_validation.trust)
 
             # reputation
-            # missing logic!!!!
-            attributes.append(stakeholder.reputation)
+            stakeholder.reputation.calculate_trust()
+            weights.append(stakeholder.reputation.weight)
+            attributes_trust.append(stakeholder.reputation.trust)
 
             # direct trust
-            # missing logic!!!!
-            attributes.append(stakeholder.direct_trust)
+            stakeholder.direct_trust.calculate_trust()
+            weights.append(stakeholder.direct_trust.weight)
+            attributes_trust.append(stakeholder.direct_trust.trust)
 
-            # final weighted trust
-            setattr(stakeholder, 'trust', np.dot(self.resource_weights, attributes))
-            
 
-        elif stakeholder.group == 'app':
+        elif isinstance(stakeholder, ApplicationProvider):
             # app trust estimation
 
             # did verification
-            if not (verify_did(stakeholder.did)):
-                setattr(stakeholder, 'trust', 0)
-                return
+            stakeholder.identity_verification.calculate_trust()
+            weights.append(stakeholder.identity_verification.weight)
+            attributes_trust.append(stakeholder.identity_verification.trust)
             
             # location
-            if not validate_location(stakeholder.location):
-                setattr(stakeholder, 'trust', 0)
-                return
+            stakeholder.location.calculate_trust()
+            weights.append(stakeholder.location.weight)
+            attributes_trust.append(stakeholder.location.trust)
 
             # compliance
-            # missing logic!!!!
-            attributes.append(stakeholder.compliance)
+            stakeholder.compliance.calculate_trust()
+            weights.append(stakeholder.compliance.weight)
+            attributes_trust.append(stakeholder.compliance.trust)
 
             # reputation
-            # missing logic!!!!
-            attributes.append(stakeholder.reputation)
+            stakeholder.reputation.calculate_trust()
+            weights.append(stakeholder.reputation.weight)
+            attributes_trust.append(stakeholder.reputation.trust)
 
             # direct trust
-            # missing logic!!!!
-            attributes.append(stakeholder.direct_trust)
+            stakeholder.direct_trust.calculate_trust()
+            weights.append(stakeholder.direct_trust.weight)
+            attributes_trust.append(stakeholder.direct_trust.trust)
 
-            # final weighted trust
-            setattr(stakeholder, 'trust', np.dot(self.app_weights, attributes))            
-
-
-        
         else:
             print(f"Warning: {stakeholder.name} does not belong to a valid group")
             return
+        
+        # final weighted trust
+        stakeholder.trust = np.dot(weights, attributes_trust)
     
-    def compute_performance(self, stakeholder):
-        metrics = stakeholder.performance_metrics
-        return np.mean(list(metrics.values()))
-    
-    def update_attribute(self, stakeholder, attribute, new_value):
+    '''def update_attribute(self, stakeholder, attribute, new_value):
         if hasattr(stakeholder, attribute):
             setattr(stakeholder, attribute, new_value)
         else:
-            print(f"Warning: {stakeholder.name} does not have attribute {attribute}")
+            print(f"Warning: {stakeholder.name} does not have attribute {attribute}")'''
 
     def trust_evaluation(self, stakeholder):
         # Gets stakeholder trust if above a certain treshold add to trusted_stakeholders
-        if getattr(stakeholder, 'trust') > 0.5:
+        if stakeholder.trust > 0.5:
             if (stakeholder.name, stakeholder.did) not in self.trusted_stakeholders:
                 self.trusted_stakeholders.append((stakeholder.name, stakeholder.did))
             print(f"{stakeholder.name} is trustworthy")

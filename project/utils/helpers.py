@@ -1,11 +1,31 @@
-def verify_did(did):
-    if did.startswith("did:"):
+from typing import NamedTuple
+from enum import IntEnum
+
+from models.did import DID
+
+
+class Coordinates(NamedTuple):
+    lat: float
+    lon: float
+
+
+class Entities(IntEnum):
+    """
+    Used for index of AttributeWeights. 
+    """
+    RESOURCE_PROVIDER = 0
+    RESOURCE_CAPACITY = 1
+    APPLICATION_PROVIDER = 2
+
+
+def verify_did(did: DID):
+    if did.raw.startswith("did:"):
         return True
     else:
         print(f"Warning: {did} is not a valid DID")
         return False
 
-def validate_location(location):    
+def validate_location(location: Coordinates):    
     """
     Validates if the given coordinates are within Slovenian territory.
 

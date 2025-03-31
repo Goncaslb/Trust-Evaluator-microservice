@@ -5,7 +5,7 @@ class DID:
 
 
     def __init__(self, did_raw):
-        did_raw: str = did_raw
+        self.raw: str = did_raw
 
         self.parse_raw
 

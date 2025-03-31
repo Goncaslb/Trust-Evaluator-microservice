@@ -1,10 +1,11 @@
 import uuid
-from typing import Optional
+from typing import Optional, Any
 from abc import ABC, abstractmethod
 from enum import IntEnum
 
-from did import DID
-from attributes import IdentityVerification, \
+from .did import DID
+from utils.helpers import Coordinates, Entities
+from .attributes import IdentityVerification, \
                        Reputation, \
                        DirectTrust, \
                        Compliance, \
@@ -16,16 +17,6 @@ from attributes import IdentityVerification, \
 
 
 INITIAL_TRUST = 0
-
-
-class Entities(IntEnum):
-    """
-    Used for index of AttributeWeights. 
-    """
-    RESOURCE_PROVIDER = 0
-    RESOURCE_CAPACITY = 1
-    APPLICATION_PROVIDER = 2
-
 
 class Stakeholder(ABC):
 
@@ -49,7 +40,7 @@ class Stakeholder(ABC):
         self.did: DID = DID(did_raw)
 
         # 
-        self.identity_verification = IdentityVerification(entity_idx)
+        self.identity_verification = IdentityVerification(entity_idx, self.did)
 
         # 
         self.reputation = Reputation(entity_idx, reputation)
@@ -57,42 +48,38 @@ class Stakeholder(ABC):
         # 
         self.direct_trust = DirectTrust(entity_idx, direct_trust)
 
-    @abstractmethod
-    def calculate_trust(self):
-        pass
-
 
 class ResourceProvider(Stakeholder): # or Resource Capacity provider
 
     def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, compliance: float, historical_behavior: float):
 
-        super().__init__(name, did_raw, reputation, direct_trust)
+        super().__init__(name, Entities.RESOURCE_PROVIDER, did_raw, reputation, direct_trust)
 
-        self.compliance = Compliance(Entities.RESOURCE_PROVIDER)
-        self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_PROVIDER)
+        self.compliance = Compliance(Entities.RESOURCE_PROVIDER, compliance)
+        self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_PROVIDER, historical_behavior)
 
 
 class ResourceCapacity(Stakeholder): # or Resources
 
-    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, performance: float, location: float, historical_behavior: float, contextual_fit: float, third_party_validation: float, provider: ResourceProvider):
+    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, performance: Any, location: Coordinates, historical_behavior: float, contextual_fit: float, third_party_validation: float, provider: ResourceProvider):
 
-        super().__init__(name, did_raw, reputation, direct_trust)
+        super().__init__(name, Entities.RESOURCE_CAPACITY, did_raw, reputation, direct_trust)
 
-        self.performance = Performance(Entities.RESOURCE_CAPACITY)
-        self.location = Location(Entities.RESOURCE_CAPACITY)
-        self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_CAPACITY)
-        self.contextual_fit = ContextualFit(Entities.RESOURCE_CAPACITY)
-        self.third_party_validation = ThirdPartyValidation(Entities.RESOURCE_CAPACITY)
+        self.performance = Performance(Entities.RESOURCE_CAPACITY, performance)
+        self.location = Location(Entities.RESOURCE_CAPACITY, location)
+        self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_CAPACITY, historical_behavior)
+        self.contextual_fit = ContextualFit(Entities.RESOURCE_CAPACITY, contextual_fit)
+        self.third_party_validation = ThirdPartyValidation(Entities.RESOURCE_CAPACITY, third_party_validation)
 
-        self.provider: ResourceProvider = provider
+        self.provider: ResourceProvider = provider  # TODO add as attribute?
 
 
 class ApplicationProvider(Stakeholder):
 
-    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, compliance: float, location: float):
+    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, compliance: float, location: Coordinates):
 
-        super().__init__(name, did_raw, reputation, direct_trust)
+        super().__init__(name, Entities.APPLICATION_PROVIDER, did_raw, reputation, direct_trust)
 
-        self.compliance = Compliance(Entities.APPLICATION_PROVIDER)
-        self.location = Location(Entities.APPLICATION_PROVIDER)
+        self.compliance = Compliance(Entities.APPLICATION_PROVIDER, compliance)
+        self.location = Location(Entities.APPLICATION_PROVIDER, location)
 
