@@ -1,5 +1,4 @@
 
-# TODO: seperated verified credentials and did
 
 class DID:
 
@@ -9,5 +8,5 @@ class DID:
 
         self.parse_raw
 
-    def parse_raw():
+    def parse_raw(self):
         return

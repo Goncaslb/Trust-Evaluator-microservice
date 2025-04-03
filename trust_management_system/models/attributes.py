@@ -2,6 +2,8 @@
 from abc import ABC, abstractmethod
 from typing import Any
 import numpy as np
+import os
+import sys
 
 from utils.helpers import Coordinates, Entities, validate_location, verify_did
 from models.did import DID
