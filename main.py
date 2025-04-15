@@ -27,7 +27,7 @@ def main():
     trusted_stakeholders = evaluator.get_trusted_stakeholders()
     
     # Now we simmulate that there was registered a worst performance of CapacityA so we want to see a difference  in the trust value
-    new_performance = {"throughput": 0.5, "bandwidth": 0.45}
+    new_performance = {"throughput": 0.5, "bandwidth": 0.30}
     capacityA.performance.metrics = new_performance
 
     print("\nTrust Scores After Performance Update:")
@@ -52,6 +52,7 @@ def main():
     print('\nTrust evaluation after setting app provider location out of Slovenia:')
     for s in stakeholders:
         evaluator.compute_trust(s)
+        print(f"{s.name}: {s.trust:.4f}")
         evaluator.trust_evaluation(s)
     
     a = evaluator.get_trusted_stakeholders()

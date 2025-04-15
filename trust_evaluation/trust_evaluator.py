@@ -22,11 +22,14 @@ class TrustEvaluator:
         if isinstance(stakeholder, ResourceProvider):
             # provider trust estimation 
             
+            # 1) Deterministic part
             # did verification
             stakeholder.identity_verification.calculate_trust()
-            weights.append(stakeholder.identity_verification.weight)
-            attributes_trust.append(stakeholder.identity_verification.trust)
+            if stakeholder.identity_verification.trust == 0:
+                stakeholder.trust = 0
+                return
             
+            # 2) Stochastic part
             # compliance
             stakeholder.compliance.calculate_trust()
             weights.append(stakeholder.compliance.weight)
@@ -51,20 +54,25 @@ class TrustEvaluator:
         elif isinstance(stakeholder, ResourceCapacity):
             # resource trust estimation
 
+            # 1) Deterministic part
             # did verification
             stakeholder.identity_verification.calculate_trust()
-            weights.append(stakeholder.identity_verification.weight)
-            attributes_trust.append(stakeholder.identity_verification.trust)
+            if stakeholder.identity_verification.trust == 0:
+                stakeholder.trust = 0
+                return
+            
+            # location
+            stakeholder.location.calculate_trust()
+            if stakeholder.location.trust == 0:
+                stakeholder.trust = 0
+                return
             
             # provider trust
             if not any(stakeholder.provider.did == trusted[1] for trusted in self.trusted_stakeholders):
                 stakeholder.trust = 0
                 return
             
-            # location
-            stakeholder.location.calculate_trust()
-            weights.append(stakeholder.location.weight)
-            attributes_trust.append(stakeholder.location.trust)
+            # 2) Stochastic part
             
             # performance metrics
             stakeholder.performance.calculate_trust()
@@ -100,16 +108,20 @@ class TrustEvaluator:
         elif isinstance(stakeholder, ApplicationProvider):
             # app trust estimation
 
+            # 1) Deterministic part
             # did verification
             stakeholder.identity_verification.calculate_trust()
-            weights.append(stakeholder.identity_verification.weight)
-            attributes_trust.append(stakeholder.identity_verification.trust)
+            if stakeholder.identity_verification.trust == 0:
+                stakeholder.trust = 0
+                return
             
             # location
             stakeholder.location.calculate_trust()
-            weights.append(stakeholder.location.weight)
-            attributes_trust.append(stakeholder.location.trust)
-
+            if stakeholder.location.trust == 0:
+                stakeholder.trust = 0
+                return
+            
+            # 2) Stochastic part
             # compliance
             stakeholder.compliance.calculate_trust()
             weights.append(stakeholder.compliance.weight)
@@ -130,7 +142,8 @@ class TrustEvaluator:
             return
         
         # final weighted trust
-        stakeholder.trust = np.dot(weights, attributes_trust)
+        #print(weights, 'weights', '\n',attributes_trust, 'atrributes')
+        stakeholder.trust = np.dot(weights, attributes_trust)/np.sum(weights)
     
     '''def update_attribute(self, stakeholder, attribute, new_value):
         if hasattr(stakeholder, attribute):
