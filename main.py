@@ -7,7 +7,7 @@ def main():
     providerA = ResourceProvider(name="Provider_A", did_raw="did:example:123", compliance=1, historical_behavior=0.7, reputation=0.6, direct_trust=0.9)
     
     # CapacityA is a resource provided from  providerA which will also be trusted
-    capacityA = ResourceCapacity(name="Capacity_A", did_raw="did:example:456", performance={"throughput": 0.8, "bandwidth": 0.7}, location=(46.05, 14.47), historical_behavior=0.8, contextual_fit=0.7, third_party_validation=0.6, reputation=0.65, direct_trust=0.8, provider=providerA)
+    capacityA = ResourceCapacity(name="Capacity_A", did_raw="did:example:456", performance={"throughput": [0.8,0.7], "bandwidth": [0.7,0.7]}, location=(46.05, 14.47), historical_behavior=0.8, contextual_fit=0.7, third_party_validation=0.6, reputation=0.65, direct_trust=0.8, provider=providerA)
     
     # AppProviderX is an application provider that will be trusted
     app_providerX = ApplicationProvider(name="AppProvider_X", did_raw="did:example:789", compliance=1, location=(46.05, 14.47), reputation=0.65, direct_trust=0.85)
@@ -15,7 +15,7 @@ def main():
     # App provider that will not be trusted
     bad_app_providerH = ApplicationProvider(name="AppProvider_H", did_raw="did:example:326", compliance=0.1, location=(46.05, 14.47), reputation=0.4, direct_trust=0.3)
 
-    evaluator = TrustEvaluator()
+    evaluator = TrustEvaluator(model='probabilistic') # 'deterministic' or 'probabilistic'
     stakeholders = [providerA, capacityA, app_providerX, bad_app_providerH]
     
     print("Initial Trust Scores and Evaluation:")
@@ -27,7 +27,7 @@ def main():
     trusted_stakeholders = evaluator.get_trusted_stakeholders()
     
     # Now we simmulate that there was registered a worst performance of CapacityA so we want to see a difference  in the trust value
-    new_performance = {"throughput": 0.5, "bandwidth": 0.30}
+    new_performance = {"throughput": [0.5,0.50], "bandwidth": [0.30,0.30]}
     capacityA.performance.metrics = new_performance
 
     print("\nTrust Scores After Performance Update:")

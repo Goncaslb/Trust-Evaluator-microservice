@@ -7,8 +7,9 @@ from models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationPr
 
 class TrustEvaluator:
     
-    def __init__(self):
+    def __init__(self, model):
         self.trusted_stakeholders = []
+        self.model = model
 
     def get_trusted_stakeholders(self):
 
@@ -18,6 +19,7 @@ class TrustEvaluator:
     def compute_trust(self, stakeholder):
         attributes_trust = []
         weights = []
+        distrust = 0
 
         if isinstance(stakeholder, ResourceProvider):
             # provider trust estimation 
@@ -26,8 +28,7 @@ class TrustEvaluator:
             # did verification
             stakeholder.identity_verification.calculate_trust()
             if stakeholder.identity_verification.trust == 0:
-                stakeholder.trust = 0
-                return
+                distrust = 1
             
             # 2) Stochastic part
             # compliance
@@ -58,24 +59,21 @@ class TrustEvaluator:
             # did verification
             stakeholder.identity_verification.calculate_trust()
             if stakeholder.identity_verification.trust == 0:
-                stakeholder.trust = 0
-                return
+                distrust = 1
             
             # location
             stakeholder.location.calculate_trust()
             if stakeholder.location.trust == 0:
-                stakeholder.trust = 0
-                return
+                distrust = 1
             
             # provider trust
             if not any(stakeholder.provider.did == trusted[1] for trusted in self.trusted_stakeholders):
-                stakeholder.trust = 0
-                return
+                distrust = 1
             
             # 2) Stochastic part
             
             # performance metrics
-            stakeholder.performance.calculate_trust()
+            stakeholder.performance.calculate_trust(self.model)
             weights.append(stakeholder.performance.weight)
             attributes_trust.append(stakeholder.performance.trust)
 
@@ -112,14 +110,12 @@ class TrustEvaluator:
             # did verification
             stakeholder.identity_verification.calculate_trust()
             if stakeholder.identity_verification.trust == 0:
-                stakeholder.trust = 0
-                return
+                distrust = 1
             
             # location
             stakeholder.location.calculate_trust()
             if stakeholder.location.trust == 0:
-                stakeholder.trust = 0
-                return
+                distrust = 1
             
             # 2) Stochastic part
             # compliance
@@ -143,6 +139,9 @@ class TrustEvaluator:
         
         # final weighted trust
         #print(weights, 'weights', '\n',attributes_trust, 'atrributes')
+        if distrust == 1:
+            stakeholder.trust = 0
+            return
         stakeholder.trust = np.dot(weights, attributes_trust)/np.sum(weights)
     
     '''def update_attribute(self, stakeholder, attribute, new_value):

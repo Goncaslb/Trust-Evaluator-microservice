@@ -1,6 +1,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Optional
+from trust_evaluation.probabilistic import SingleFeatureTrustModel
 import numpy as np
 import os
 import sys
@@ -99,13 +100,23 @@ class Performance(Attribute):
         super().__init__(AttributeWeights.PERFORMANCE[entity])
 
         self.metrics = metrics
+        self.sftm = []
+        for key in self.metrics.keys():
+            self.sftm.append(SingleFeatureTrustModel(name=key))
         pass
 
-    def compute_performance(self):
-        return np.mean(list(self.metrics.values()))
+    def compute_performance(self, model):
+        if model == 'deterministic':
+            return np.mean(list(self.metrics.values()))
+        elif model == 'probabilistic':
+            for m in self.sftm:
+                for v in self.metrics[m.name]:
+                    # TODO v in this case is already a probability, from prometheus that is not the case we need to define a function to convert these values, we can give a ranges value when deffining the stakeholder and such 
+                    m.observe(v)
+            return(np.mean([m.adjusted_trust_score for m in self.sftm]))
 
-    def calculate_trust(self):
-        self.trust = self.compute_performance()
+    def calculate_trust(self, model):
+        self.trust = self.compute_performance(model)
 
 
 class Location(Attribute):
