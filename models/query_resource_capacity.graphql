@@ -10,28 +10,29 @@ fragment PerformanceMetricsFields on PerformanceMetrics {
     utilizationRate
 }
   
-query {
-    performanceMetrics {
+query (
+  $id: String!
+) {
+    performanceMetrics(stakeholderId: $id) {
         ...PerformanceMetricsFields
     }
-    location{
+    location(stakeholderId: $id) {
         lat
         lon
     }
-    historicalBehavior{
+    historicalBehavior(stakeholderId: $id) {
         trust
     }
-    contextualFit{
+    contextualFit(stakeholderId: $id) {
         trust
     }
-    thirdPartyValidation{
+    thirdPartyValidation(stakeholderId: $id) {
         trust
     }
-    reputation{
+    reputation(stakeholderId: $id) {
         trust
     }
-    directTrust{
+    directTrust(stakeholderId: $id) {
         trust
     }
 }
-  

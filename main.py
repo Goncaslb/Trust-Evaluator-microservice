@@ -6,6 +6,7 @@ from models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationPr
 from trust_evaluation.trust_evaluator import TrustEvaluator
 from utils.helpers import Coordinates, get_graphql_attributes_json
 from utils.settings import settings
+from models.attributes import TrustCalcModel
 
 
 def main():
@@ -16,11 +17,12 @@ def main():
     # CapacityA is a resource provided from  providerA which will also be trusted
     aggregator_url = f"http://{settings.trust_metric_aggregator_host}:{settings.trust_metric_aggregator_port}"
     query_fpath = Path(__file__).parent.absolute() / "models/query_resource_capacity.graphql"
-    aggregator_data = get_graphql_attributes_json(aggregator_url, query_fpath)
+    query_variables = {"id": "1234"}
+    aggregator_data = get_graphql_attributes_json(aggregator_url, query_fpath, query_variables)
 
     capacityA = ResourceCapacity(name="Capacity_A", 
                                  did_raw="did:example:456", 
-                                 performance=aggregator_data["performanceMetrics"], 
+                                 performance={k: [v] for k, v in aggregator_data["performanceMetrics"].items()},
                                  location=Coordinates(aggregator_data["location"]["lat"], aggregator_data["location"]["lon"]),
                                  historical_behavior=aggregator_data["historicalBehavior"]["trust"], 
                                  contextual_fit=aggregator_data["contextualFit"]["trust"], 
@@ -37,7 +39,7 @@ def main():
     # App provider that will not be trusted
     bad_app_providerH = ApplicationProvider(name="AppProvider_H", did_raw="did:example:326", compliance=0.1, location=(46.05, 14.47), reputation=0.4, direct_trust=0.3)
 
-    evaluator = TrustEvaluator(model='probabilistic') # 'deterministic' or 'probabilistic'
+    evaluator = TrustEvaluator(model=TrustCalcModel.DETERMINISTIC) # 'deterministic' or 'probabilistic'
     stakeholders = [providerA, capacityA, app_providerX, bad_app_providerH]
     
     print("Initial Trust Scores and Evaluation:")

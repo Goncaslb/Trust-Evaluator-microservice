@@ -6,6 +6,8 @@
     </content>
     <orderEntry type="jdk" jdkName="Python 3.13 (Trust_Managment_System)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="Trust_Metric_Aggregator_Microservice" />
+    <orderEntry type="module" module-name="Trust_Frontend_Microservice" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />
