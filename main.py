@@ -1,5 +1,12 @@
+
+import requests
+from pathlib import Path
+
 from models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationProvider
 from trust_evaluation.trust_evaluator import TrustEvaluator
+from utils.helpers import Coordinates, get_graphql_attributes_json
+from utils.settings import settings
+
 
 def main():
     
@@ -7,7 +14,22 @@ def main():
     providerA = ResourceProvider(name="Provider_A", did_raw="did:example:123", compliance=1, historical_behavior=0.7, reputation=0.6, direct_trust=0.9)
     
     # CapacityA is a resource provided from  providerA which will also be trusted
-    capacityA = ResourceCapacity(name="Capacity_A", did_raw="did:example:456", performance={"throughput": 0.8, "bandwidth": 0.7}, location=(46.05, 14.47), historical_behavior=0.8, contextual_fit=0.7, third_party_validation=0.6, reputation=0.65, direct_trust=0.8, provider=providerA)
+    aggregator_url = f"http://{settings.trust_metric_aggregator_host}:{settings.trust_metric_aggregator_port}"
+    query_fpath = Path(__file__).parent.absolute() / "models/query_resource_capacity.graphql"
+    aggregator_data = get_graphql_attributes_json(aggregator_url, query_fpath)
+
+    capacityA = ResourceCapacity(name="Capacity_A", 
+                                 did_raw="did:example:456", 
+                                 performance=aggregator_data["performanceMetrics"], 
+                                 location=Coordinates(aggregator_data["location"]["lat"], aggregator_data["location"]["lon"]),
+                                 historical_behavior=aggregator_data["historicalBehavior"]["trust"], 
+                                 contextual_fit=aggregator_data["contextualFit"]["trust"], 
+                                 third_party_validation=aggregator_data["thirdPartyValidation"]["trust"], 
+                                 reputation=aggregator_data["reputation"]["trust"], 
+                                 direct_trust=aggregator_data["directTrust"]["trust"], 
+                                 provider=providerA)
+    
+    #capacityA = ResourceCapacity(name="Capacity_A", did_raw="did:example:456", performance={"throughput": 0.8, "bandwidth": 0.7}, location=(46.05, 14.47), historical_behavior=0.8, contextual_fit=0.7, third_party_validation=0.6, reputation=0.65, direct_trust=0.8, provider=providerA)
     
     # AppProviderX is an application provider that will be trusted
     app_providerX = ApplicationProvider(name="AppProvider_X", did_raw="did:example:789", compliance=1, location=(46.05, 14.47), reputation=0.65, direct_trust=0.85)
@@ -64,9 +86,3 @@ if __name__ == "__main__":
 
 
 # onthologist? so reestructure the way trust works. dependencies between stakeholders. 
-
-# add location fail example
-
-# provider fail example
-
-# maybe join both, we have a provider that is trusted then we change the location and it becomes not trusted making the resource not trusted.

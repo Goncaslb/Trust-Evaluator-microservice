@@ -1,0 +1,37 @@
+fragment PerformanceMetricsFields on PerformanceMetrics {
+    availability
+    reliability
+    energyEfficiency
+    latency
+    throughput
+    bandwidth
+    jitter
+    packetLoss
+    utilizationRate
+}
+  
+query {
+    performanceMetrics {
+        ...PerformanceMetricsFields
+    }
+    location{
+        lat
+        lon
+    }
+    historicalBehavior{
+        trust
+    }
+    contextualFit{
+        trust
+    }
+    thirdPartyValidation{
+        trust
+    }
+    reputation{
+        trust
+    }
+    directTrust{
+        trust
+    }
+}
+  

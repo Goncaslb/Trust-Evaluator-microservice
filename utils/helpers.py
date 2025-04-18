@@ -1,5 +1,7 @@
-from typing import NamedTuple
-from enum import IntEnum
+from typing import NamedTuple, Optional
+from enum import IntEnum, StrEnum
+import requests
+from pathlib import Path
 
 from models.did import DID
 
@@ -16,6 +18,32 @@ class Entities(IntEnum):
     RESOURCE_PROVIDER = 0
     RESOURCE_CAPACITY = 1
     APPLICATION_PROVIDER = 2
+
+
+class GraphQLQueryFPath(StrEnum):
+    RESOURCE_PROVIDER = "models/query_resource_provider.graphql"
+    RESOURCE_CAPACITY = "models/query_resource_capacity.graphql"
+    APPLICATION_PROVIDER = "models/query_application_provider.graphql"
+
+
+def get_graphql_attributes_json(graphql_server_url: str, query_fpath: Path, variables: Optional[dict] = None) -> dict:
+
+    with open(query_fpath, 'r') as query_file:
+        query = query_file.read()
+
+    # headers = {
+    #     'Content-Type': 'application/json',
+    #     'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
+    # }
+
+    response = requests.post(
+        f"{graphql_server_url}/graphql",
+        json={'query': query, 'variables': variables},
+        # headers=headers
+    )
+    response.raise_for_status()
+    graphql_data = response.json()["data"]
+    return graphql_data
 
 
 def verify_did(did: DID):
