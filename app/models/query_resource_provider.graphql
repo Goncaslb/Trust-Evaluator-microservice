@@ -1,0 +1,17 @@
+
+query (
+  $id: String!
+) {
+    compliance(stakeholderId: $id) {
+        trust
+    }
+    historicalBehavior(stakeholderId: $id) {
+        trust
+    }
+    reputation(stakeholderId: $id) {
+        trust
+    }
+    directTrust(stakeholderId: $id) {
+        trust
+    }
+}

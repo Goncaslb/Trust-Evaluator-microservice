@@ -1,7 +1,6 @@
 import numpy as np
 
-from utils.helpers import verify_did, validate_location
-from models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationProvider
+from app.models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationProvider
 
 # The ontology is defined here
 

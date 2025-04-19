@@ -1,12 +1,12 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Optional
-from trust_evaluation.probabilistic import SingleFeatureTrustModel
+from app.trust_evaluation.probabilistic import SingleFeatureTrustModel
 import numpy as np
 from enum import Enum, auto
 
-from utils.helpers import Coordinates, Entities, validate_location, verify_did
-from models.did import DID
+from app.utils.helpers import Coordinates, validate_location, verify_did, Entities
+from app.models.did import DID
 
 class AttributeWeights:
    # IDENTITY_VERIFICATION = (0.1, 0.2, 0.3)

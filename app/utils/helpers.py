@@ -1,32 +1,25 @@
-from typing import NamedTuple, Optional
-from enum import IntEnum, StrEnum
+from typing import NamedTuple
+from enum import IntEnum
 import requests
 from pathlib import Path
+import re
 
-from models.did import DID
+from app.models.did import DID
 
+class Entities(IntEnum):
+    """
+    Used for index of AttributeWeights.
+    """
+    RESOURCE_PROVIDER = 0
+    RESOURCE_CAPACITY = 1
+    APPLICATION_PROVIDER = 2
 
 class Coordinates(NamedTuple):
     lat: float
     lon: float
 
 
-class Entities(IntEnum):
-    """
-    Used for index of AttributeWeights. 
-    """
-    RESOURCE_PROVIDER = 0
-    RESOURCE_CAPACITY = 1
-    APPLICATION_PROVIDER = 2
-
-
-class GraphQLQueryFPath(StrEnum):
-    RESOURCE_PROVIDER = "models/query_resource_provider.graphql"
-    RESOURCE_CAPACITY = "models/query_resource_capacity.graphql"
-    APPLICATION_PROVIDER = "models/query_application_provider.graphql"
-
-
-def get_graphql_attributes_json(graphql_server_url: str, query_fpath: Path, variables: Optional[dict] = None) -> dict:
+def get_graphql_query_json(graphql_server_url: str, query_fpath: Path, variables: dict) -> dict:
 
     with open(query_fpath, 'r') as query_file:
         query = query_file.read()
@@ -45,6 +38,12 @@ def get_graphql_attributes_json(graphql_server_url: str, query_fpath: Path, vari
     graphql_data = response.json()["data"]
     return graphql_data
 
+def camel_to_snake_case(camel_case_string: str) -> str:
+    """
+    Convert camelCase to snake_case for parsing GraphQL responses into class attributes.
+    """
+    snake_case_string = re.sub(r'(?<!^)(?=[A-Z])', '_', camel_case_string).lower()
+    return snake_case_string
 
 def verify_did(did: DID):
     if did.raw.startswith("did:"):

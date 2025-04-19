@@ -1,10 +1,12 @@
 import uuid
-from typing import Optional, Any
-from abc import ABC, abstractmethod
-from enum import IntEnum
+from typing import Any
+from abc import ABC
+from enum import StrEnum
+from pathlib import Path
 
 from .did import DID
-from utils.helpers import Coordinates, Entities, GraphQLQueryFPath
+from app.utils.helpers import Coordinates, Entities, get_graphql_query_json, camel_to_snake_case
+from app.utils.settings import settings
 from .attributes import IdentityVerification, \
                        Reputation, \
                        DirectTrust, \
@@ -18,12 +20,18 @@ from .attributes import IdentityVerification, \
 
 INITIAL_TRUST = 0
 
+
+class GraphQLQueryFPath(StrEnum):
+    RESOURCE_PROVIDER = "query_resource_provider.graphql"
+    RESOURCE_CAPACITY = "query_resource_capacity.graphql"
+    APPLICATION_PROVIDER = "query_application_provider.graphql"
+
 class Stakeholder(ABC):
 
     # Each time a new uuid is generated
     id: uuid.UUID = uuid.uuid4()
 
-    # Level in trust as a floating point number
+    # Level of trust as a floating point number
     trust: float = INITIAL_TRUST
 
     def __init__(self, name: str, entity_idx: Entities, did_raw: str, graphql_query_fpath: str, reputation: float, direct_trust: float):
@@ -49,6 +57,35 @@ class Stakeholder(ABC):
         # 
         self.direct_trust = DirectTrust(entity_idx, direct_trust)
 
+    def get_new_attributes(self) -> dict:
+        aggregator_url = f"http://{settings.trust_metric_aggregator_host}:{settings.trust_metric_aggregator_port}"
+        query_abs_fpath = Path(__file__).parent.absolute() / self.graphql_query_fpath
+        query_variables = {"id": str(self.id)}
+        aggregator_data = get_graphql_query_json(aggregator_url, query_abs_fpath, query_variables)
+        return aggregator_data
+
+    def update_attributes(self):
+        """
+        Used for updating or initializing attributes.
+        """
+        new_trust_attributes = self.get_new_attributes()
+
+        # Iterate and determine new values of attributes of trust attributes
+        # Important: attributes (in snake case) must have the same name as GraphQL attributes (in camel case)
+        for trust_attribute_key, trust_attribute_value in new_trust_attributes.items():
+            for attr_key, attr_value in trust_attribute_value.items():
+                trust_attribute = getattr(self, camel_to_snake_case(trust_attribute_key))
+
+                # For performance metrics instead append the value
+                if camel_to_snake_case(trust_attribute_key) == 'performance':
+                    if (trust_attribute and
+                            hasattr(trust_attribute, 'metrics') and
+                            camel_to_snake_case(attr_key) in trust_attribute.metrics):
+                        trust_attribute.metrics[camel_to_snake_case(attr_key)].append(attr_value)
+                else:
+                    if trust_attribute and hasattr(trust_attribute, camel_to_snake_case(attr_key)):
+                        setattr(trust_attribute, camel_to_snake_case(attr_key), attr_value)
+
 
 class ResourceProvider(Stakeholder): # or Resource Capacity provider
 
@@ -59,6 +96,7 @@ class ResourceProvider(Stakeholder): # or Resource Capacity provider
         self.compliance = Compliance(Entities.RESOURCE_PROVIDER, compliance)
         self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_PROVIDER, historical_behavior)
 
+        self.update_attributes()  # Initialize the trust attributes
 
 class ResourceCapacity(Stakeholder): # or Resources
 
@@ -74,6 +112,8 @@ class ResourceCapacity(Stakeholder): # or Resources
 
         self.provider: ResourceProvider = provider  # TODO add as attribute?
 
+        self.update_attributes()  # Initialize the trust attributes
+
 
 class ApplicationProvider(Stakeholder):
 
@@ -83,4 +123,6 @@ class ApplicationProvider(Stakeholder):
 
         self.compliance = Compliance(Entities.APPLICATION_PROVIDER, compliance)
         self.location = Location(Entities.APPLICATION_PROVIDER, location)
+
+        self.update_attributes()  # Initialize the trust attributes
 

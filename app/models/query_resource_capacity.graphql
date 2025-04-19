@@ -1,4 +1,4 @@
-fragment PerformanceMetricsFields on PerformanceMetrics {
+fragment PerformanceMetricsFields on Performance {
     availability
     reliability
     energyEfficiency
@@ -13,7 +13,7 @@ fragment PerformanceMetricsFields on PerformanceMetrics {
 query (
   $id: String!
 ) {
-    performanceMetrics(stakeholderId: $id) {
+    performance(stakeholderId: $id) {
         ...PerformanceMetricsFields
     }
     location(stakeholderId: $id) {

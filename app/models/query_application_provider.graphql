@@ -1,0 +1,18 @@
+
+query (
+  $id: String!
+) {
+    location(stakeholderId: $id) {
+        lat
+        lon
+    }
+    compliance(stakeholderId: $id) {
+        trust
+    }
+    reputation(stakeholderId: $id) {
+        trust
+    }
+    directTrust(stakeholderId: $id) {
+        trust
+    }
+}
