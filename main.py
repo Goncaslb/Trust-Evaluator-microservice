@@ -1,7 +1,10 @@
 
+import uvicorn
+
 from app.models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationProvider
 from app.trust_evaluation.trust_evaluator import TrustEvaluator
 from app.models.attributes import TrustCalcModel
+from app.trust_evaluation.endpoints import evaluator_app
 
 
 def main():
@@ -63,6 +66,7 @@ def main():
     
 if __name__ == "__main__":
     main()
+    uvicorn.run(evaluator_app, host="0.0.0.0", port=8001)
 
 
 

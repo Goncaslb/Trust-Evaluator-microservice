@@ -137,20 +137,13 @@ class TrustEvaluator:
             return
         
         # final weighted trust
-        #print(weights, 'weights', '\n',attributes_trust, 'atrributes')
         if distrust == 1:
             stakeholder.trust = 0
             return
         stakeholder.trust = np.dot(weights, attributes_trust)/np.sum(weights)
     
-    '''def update_attribute(self, stakeholder, attribute, new_value):
-        if hasattr(stakeholder, attribute):
-            setattr(stakeholder, attribute, new_value)
-        else:
-            print(f"Warning: {stakeholder.name} does not have attribute {attribute}")'''
-
     def trust_evaluation(self, stakeholder):
-        # Gets stakeholder trust if above a certain treshold add to trusted_stakeholders
+        # Gets stakeholder trust if above a certain threshold add to trusted_stakeholders
         if stakeholder.trust > 0.5:
             if (stakeholder.name, stakeholder.did) not in self.trusted_stakeholders:
                 self.trusted_stakeholders.append((stakeholder.name, stakeholder.did))

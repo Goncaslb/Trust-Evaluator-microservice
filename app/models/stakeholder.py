@@ -19,7 +19,8 @@ from .attributes import IdentityVerification, \
 
 
 INITIAL_TRUST = 0
-
+TRUST_METRIC_AGGREGATOR_HOST = settings.trust_metric_aggregator_host
+TRUST_METRIC_AGGREGATOR_PORT = settings.trust_metric_aggregator_port
 
 class GraphQLQueryFPath(StrEnum):
     RESOURCE_PROVIDER = "query_resource_provider.graphql"
@@ -58,7 +59,7 @@ class Stakeholder(ABC):
         self.direct_trust = DirectTrust(entity_idx, direct_trust)
 
     def get_new_attributes(self) -> dict:
-        aggregator_url = f"http://{settings.trust_metric_aggregator_host}:{settings.trust_metric_aggregator_port}"
+        aggregator_url = f"http://{TRUST_METRIC_AGGREGATOR_HOST}:{TRUST_METRIC_AGGREGATOR_PORT}"
         query_abs_fpath = Path(__file__).parent.absolute() / self.graphql_query_fpath
         query_variables = {"id": str(self.id)}
         aggregator_data = get_graphql_query_json(aggregator_url, query_abs_fpath, query_variables)
@@ -66,7 +67,7 @@ class Stakeholder(ABC):
 
     def update_attributes(self):
         """
-        Used for updating or initializing attributes.
+        Used for updating attributes.
         """
         new_trust_attributes = self.get_new_attributes()
 
