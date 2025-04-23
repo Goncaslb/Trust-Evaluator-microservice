@@ -110,7 +110,13 @@ class Performance(Attribute):
         pass
 
     def compute_performance(self, model, ranges):
+
         if model == TrustCalcModel.DETERMINISTIC:
+            normalized_metrics = []
+            for metric in self.metrics:
+                minimum, maximum = ranges[metric.name]
+                v_prob = prob_transform(minimum, maximum, metric.value)
+                normalized_metrics.append(v_prob)
             trust = np.mean(list(self.metrics.values()))
             for key in self.metrics.keys():
                 self.metrics[key] = []
@@ -118,19 +124,20 @@ class Performance(Attribute):
             
         elif model == TrustCalcModel.PROBABILISTIC:
             for m in self.sftm:
-                if m.name in ranges:
-                    minimum, maximum = ranges[m.name]
                 for v in self.metrics[m.name]:
                     if m.name in ranges:
-                        v_prob = prob_transform(minimum,maximum, v)
+                        minimum, maximum = ranges[m.name]
+                        v_prob = prob_transform(minimum, maximum, v)
                     else: 
                         v_prob = v
                     m.observe(v_prob)
-                self.metrics[m.name] = []
+
+            for key in self.metrics.keys():
+                self.metrics[key] = []
             return np.mean([m.adjusted_trust_score for m in self.sftm])
 
-    def calculate_trust(self, model: Optional[TrustCalcModel] = None, ):
-        self.trust = self.compute_performance(model)
+    def calculate_trust(self, model: Optional[TrustCalcModel] = None, ranges: Optional[list] = None):
+        self.trust = float(self.compute_performance(model, ranges))
 
 
 class Location(Attribute):

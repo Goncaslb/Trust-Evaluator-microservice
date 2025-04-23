@@ -21,8 +21,19 @@ def main():
     # App provider that will not be trusted
     bad_app_providerH = ApplicationProvider(name="AppProvider_H", did_raw="did:example:326", compliance=0.1, location=(46.05, 14.47), reputation=0.4, direct_trust=0.3)
 
-    # trust evaluator ranges can be defines for example has ranges= {'troughput':(10,400), 'bandwidth'}
-    evaluator = TrustEvaluator(model=TrustCalcModel.PROBABILISTIC) # 'deterministic' or 'probabilistic'
+    # trust evaluator ranges can be defined for example has ranges= {'throughput':(10,400), 'bandwidth'}
+    ranges = {
+        "availability": (0, 1),
+        "reliability": (0, 1),
+        "energyEfficiency": (0, 1),
+        "latency": (0, 1),
+        "throughput": (0, 1),
+        "bandwidth": (0, 1),
+        "jitter": (0, 1),
+        "packetLoss": (0, 1),
+        "utilizationRate": (0, 1)
+    }
+    evaluator = TrustEvaluator(model=TrustCalcModel.PROBABILISTIC, ranges=ranges) # 'deterministic' or 'probabilistic'
     stakeholders = [providerA, capacityA, app_providerX, bad_app_providerH]
     
     print("Initial Trust Scores and Evaluation:")

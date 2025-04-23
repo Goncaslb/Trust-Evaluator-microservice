@@ -53,7 +53,7 @@ def verify_did(did: DID):
         print(f"Warning: {did} is not a valid DID")
         return False
 
-def prob_transform(minimum, maximum, value):
+def prob_transform(minimum: float, maximum: float, value: float) -> float:
     if value <= minimum:
         return 0.0
     elif value >= maximum:
