@@ -3,6 +3,7 @@ from enum import IntEnum
 import requests
 from pathlib import Path
 import re
+import numpy as np
 
 from app.models.did import DID
 
@@ -51,6 +52,18 @@ def verify_did(did: DID):
     else:
         print(f"Warning: {did} is not a valid DID")
         return False
+
+def prob_transform(minimum, maximum, value):
+    if value <= minimum:
+        return 0.0
+    elif value >= maximum:
+        return 1.0
+    else:
+        # Scale the value to the range [0, 1] using a sigmoid-like function
+        mid = (minimum + maximum) / 2  # Midpoint of the range
+        scale = (maximum - minimum) / 6  # Scale factor for smooth transition
+        return 1 / (1 + np.exp(-(value - mid) / scale))
+
 
 def validate_location(location: Coordinates):    
     """

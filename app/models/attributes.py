@@ -5,7 +5,7 @@ from app.trust_evaluation.probabilistic import SingleFeatureTrustModel
 import numpy as np
 from enum import Enum, auto
 
-from app.utils.helpers import Coordinates, validate_location, verify_did, Entities
+from app.utils.helpers import Coordinates, validate_location, verify_did, Entities, prob_transform
 from app.models.did import DID
 
 class AttributeWeights:
@@ -109,17 +109,27 @@ class Performance(Attribute):
             self.sftm.append(SingleFeatureTrustModel(name=key))
         pass
 
-    def compute_performance(self, model):
+    def compute_performance(self, model, ranges):
         if model == TrustCalcModel.DETERMINISTIC:
-            return np.mean(list(self.metrics.values()))
+            trust = np.mean(list(self.metrics.values()))
+            for key in self.metrics.keys():
+                self.metrics[key] = []
+            return trust
+            
         elif model == TrustCalcModel.PROBABILISTIC:
             for m in self.sftm:
+                if m.name in ranges:
+                    minimum, maximum = ranges[m.name]
                 for v in self.metrics[m.name]:
-                    # TODO v in this case is already a probability, from prometheus that is not the case we need to define a function to convert these values, we can give a ranges value when deffining the stakeholder and such 
-                    m.observe(v)
+                    if m.name in ranges:
+                        v_prob = prob_transform(minimum,maximum, v)
+                    else: 
+                        v_prob = v
+                    m.observe(v_prob)
+                self.metrics[m.name] = []
             return np.mean([m.adjusted_trust_score for m in self.sftm])
 
-    def calculate_trust(self, model: Optional[TrustCalcModel] = None):
+    def calculate_trust(self, model: Optional[TrustCalcModel] = None, ):
         self.trust = self.compute_performance(model)
 
 

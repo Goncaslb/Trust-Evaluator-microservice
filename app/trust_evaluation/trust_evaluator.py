@@ -6,9 +6,10 @@ from app.models.stakeholder import ResourceProvider, ResourceCapacity, Applicati
 
 class TrustEvaluator:
     
-    def __init__(self, model):
+    def __init__(self, model, ranges = None):
         self.trusted_stakeholders = []
         self.model = model
+        self.ranges = ranges
 
     def get_trusted_stakeholders(self):
 
@@ -21,6 +22,7 @@ class TrustEvaluator:
         distrust = 0
 
         if isinstance(stakeholder, ResourceProvider):
+            # stakeholder.update_attributes()
             # provider trust estimation 
             
             # 1) Deterministic part
@@ -52,6 +54,7 @@ class TrustEvaluator:
 
 
         elif isinstance(stakeholder, ResourceCapacity):
+            # stakeholder.update_attributes()
             # resource trust estimation
 
             # 1) Deterministic part
@@ -72,7 +75,7 @@ class TrustEvaluator:
             # 2) Stochastic part
             
             # performance metrics
-            stakeholder.performance.calculate_trust(self.model)
+            stakeholder.performance.calculate_trust(self.model, self.ranges)
             weights.append(stakeholder.performance.weight)
             attributes_trust.append(stakeholder.performance.trust)
 
@@ -103,6 +106,7 @@ class TrustEvaluator:
 
 
         elif isinstance(stakeholder, ApplicationProvider):
+            #stakeholder.update_attributes()
             # app trust estimation
 
             # 1) Deterministic part

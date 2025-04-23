@@ -5,7 +5,7 @@ class SingleFeatureTrustModel:
     def __init__(self, name ,base_lambda=0.1, growth_rate=0.8, uncertainty_penalty=0.8):
         self.name = name
         self.base_lambda = base_lambda
-        self.growth_rate = growth_rate  # how quickly n_eff increases
+        self.growth_rate = growth_rate
         self.uncertainty_penalty = uncertainty_penalty 
         self.n_eff = 2.0       # start with very low effective sample size
         self.alpha = 1.0
@@ -14,7 +14,8 @@ class SingleFeatureTrustModel:
 
     def observe(self, observation):
         self.measurements.append(observation)
-        if len(self.measurements) > 5:
+        
+        while len(self.measurements) > 5:
             self.measurements.pop(0)
 
         volatility = self.estimate_volatility()
@@ -44,8 +45,7 @@ class SingleFeatureTrustModel:
         return np.std(self.measurements)
 
     def compute_lambda(self, volatility):
-        # Invert the relationship: higher volatility -> higher lambda
-        # You might need to adjust the scaling factor and offset to fine-tune the behavior
+        # higher volatility -> higher lambda -> higher importance of new observations
         return max(0,min(1,self.base_lambda * (1 + 2.5*volatility)))
 
     @property
@@ -53,7 +53,7 @@ class SingleFeatureTrustModel:
         return self.alpha / (self.alpha + self.beta)
 
     @property
-    def variance(self):
+    def variance(self): # used as a measure of uncertainty 
         alpha = self.alpha
         beta_val = self.beta
         denom = (alpha + beta_val)**2 * (alpha + beta_val + 1)
