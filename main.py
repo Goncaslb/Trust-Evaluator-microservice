@@ -1,7 +1,7 @@
 
 import uvicorn
 
-from app.models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationProvider
+from app.models.stakeholder import ResourceProvider, ResourceCapacity, ApplicationProvider, MetricNames
 from app.trust_evaluation.trust_evaluator import TrustEvaluator
 from app.models.attributes import TrustCalcModel
 from app.trust_evaluation.endpoints import evaluator_app
@@ -10,28 +10,29 @@ from app.trust_evaluation.endpoints import evaluator_app
 def main():
     
     # ProviderA is a simple example which will be trusted
-    providerA = ResourceProvider(name="Provider_A", did_raw="did:example:123", compliance=1, historical_behavior=0.7, reputation=0.6, direct_trust=0.9)
+    providerA = ResourceProvider(name="Provider_A", did_raw="did:example:123")
     
     # CapacityA is a resource provided from  providerA which will also be trusted
-    capacityA = ResourceCapacity(name="Capacity_A", did_raw="did:example:456", performance={"throughput": [0.8,0.7], "bandwidth": [0.7,0.7]}, location=(46.05, 14.47), historical_behavior=0.8, contextual_fit=0.7, third_party_validation=0.6, reputation=0.65, direct_trust=0.8, provider=providerA)
+    capacityA = ResourceCapacity(name="Capacity_A", did_raw="did:example:456", provider=providerA)
     
     # AppProviderX is an application provider that will be trusted
-    app_providerX = ApplicationProvider(name="AppProvider_X", did_raw="did:example:789", compliance=1, location=(46.05, 14.47), reputation=0.65, direct_trust=0.85)
+    app_providerX = ApplicationProvider(name="AppProvider_X", did_raw="did:example:789")
     
     # App provider that will not be trusted
-    bad_app_providerH = ApplicationProvider(name="AppProvider_H", did_raw="did:example:326", compliance=0.1, location=(46.05, 14.47), reputation=0.4, direct_trust=0.3)
+    bad_app_providerH = ApplicationProvider(name="AppProvider_H", did_raw="did:example:326")
 
-    # trust evaluator ranges can be defined for example has ranges= {'throughput':(10,400), 'bandwidth'}
+    # trust evaluator ranges can be defined for example has ranges= {'throughput': (10,400), ...}
     ranges = {
-        "availability": (0, 1),
-        "reliability": (0, 1),
-        "energyEfficiency": (0, 1),
-        "latency": (0, 1),
-        "throughput": (0, 1),
-        "bandwidth": (0, 1),
-        "jitter": (0, 1),
-        "packetLoss": (0, 1),
-        "utilizationRate": (0, 1)
+        MetricNames.AVAILABILITY: (0, 1),
+        MetricNames.RELIABILITY: (0, 1),
+        MetricNames.ENERGY_EFFICIENCY: (0, 1),
+        MetricNames.LATENCY: (0, 1),
+        MetricNames.THROUGHPUT: (0, 1),
+        MetricNames.BANDWIDTH: (0, 1),
+        MetricNames.JITTER: (0, 1),
+        MetricNames.PACKET_LOSS: (0, 1),
+        MetricNames.UTILIZATION_RATE: (0, 1)
+
     }
     evaluator = TrustEvaluator(model=TrustCalcModel.PROBABILISTIC, ranges=ranges) # 'deterministic' or 'probabilistic'
     stakeholders = [providerA, capacityA, app_providerX, bad_app_providerH]
@@ -45,8 +46,8 @@ def main():
     trusted_stakeholders = evaluator.get_trusted_stakeholders()
     
     # Now we simulate that there was registered worse performance of CapacityA so we want to see a difference  in the trust value
-    new_performance = {"throughput": [0.5,0.50], "bandwidth": [0.30,0.30]}
-    capacityA.performance.metrics = new_performance
+    capacityA.performance.metrics[MetricNames.THROUGHPUT] = [0.5,0.50]
+    capacityA.performance.metrics[MetricNames.BANDWIDTH] = [0.30,0.30]
 
     print("\nTrust Scores After Performance Update:")
     for s in stakeholders:

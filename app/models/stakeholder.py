@@ -19,6 +19,8 @@ from .attributes import IdentityVerification, \
 
 
 INITIAL_TRUST = 0
+DEFAULT_ATTRIBUTE_VALUE = 1
+
 TRUST_METRIC_AGGREGATOR_HOST = settings.trust_metric_aggregator_host
 TRUST_METRIC_AGGREGATOR_PORT = settings.trust_metric_aggregator_port
 
@@ -26,6 +28,19 @@ class GraphQLQueryFPath(StrEnum):
     RESOURCE_PROVIDER = "query_resource_provider.graphql"
     RESOURCE_CAPACITY = "query_resource_capacity.graphql"
     APPLICATION_PROVIDER = "query_application_provider.graphql"
+
+
+class MetricNames(StrEnum):
+    AVAILABILITY = "availability"
+    RELIABILITY = "reliability"
+    ENERGY_EFFICIENCY = "energy_efficiency"
+    LATENCY = "latency"
+    THROUGHPUT = "throughput"
+    BANDWIDTH = "bandwidth"
+    JITTER = "jitter"
+    PACKET_LOSS = "packet_loss"
+    UTILIZATION_RATE = "utilization_rate"
+
 
 class Stakeholder(ABC):
 
@@ -90,7 +105,9 @@ class Stakeholder(ABC):
 
 class ResourceProvider(Stakeholder): # or Resource Capacity provider
 
-    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, compliance: float, historical_behavior: float):
+    def __init__(self, name: str, did_raw: str, reputation: float = DEFAULT_ATTRIBUTE_VALUE,
+                 direct_trust: float = DEFAULT_ATTRIBUTE_VALUE, compliance: float = DEFAULT_ATTRIBUTE_VALUE,
+                 historical_behavior: float = DEFAULT_ATTRIBUTE_VALUE):
 
         super().__init__(name, Entities.RESOURCE_PROVIDER, did_raw, GraphQLQueryFPath.RESOURCE_PROVIDER, reputation, direct_trust)
 
@@ -101,11 +118,26 @@ class ResourceProvider(Stakeholder): # or Resource Capacity provider
 
 class ResourceCapacity(Stakeholder): # or Resources
 
-    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, performance: Any, location: Coordinates, historical_behavior: float, contextual_fit: float, third_party_validation: float, provider: ResourceProvider):
+    def __init__(self, name: str, did_raw: str, provider: ResourceProvider = None,
+                 reputation: float = DEFAULT_ATTRIBUTE_VALUE, direct_trust: float = DEFAULT_ATTRIBUTE_VALUE,
+                 performance: float = DEFAULT_ATTRIBUTE_VALUE, location: Coordinates = Coordinates(DEFAULT_ATTRIBUTE_VALUE, DEFAULT_ATTRIBUTE_VALUE),
+                 historical_behavior: float = DEFAULT_ATTRIBUTE_VALUE, contextual_fit: float = DEFAULT_ATTRIBUTE_VALUE,
+                 third_party_validation: float = DEFAULT_ATTRIBUTE_VALUE):
 
         super().__init__(name, Entities.RESOURCE_CAPACITY, did_raw, GraphQLQueryFPath.RESOURCE_CAPACITY, reputation, direct_trust)
 
-        self.performance = Performance(Entities.RESOURCE_CAPACITY, performance)
+        default_performance_metrics = {
+            MetricNames.AVAILABILITY: [],
+            MetricNames.RELIABILITY: [],
+            MetricNames.ENERGY_EFFICIENCY: [],
+            MetricNames.LATENCY: [],
+            MetricNames.THROUGHPUT: [],
+            MetricNames.BANDWIDTH: [],
+            MetricNames.JITTER: [],
+            MetricNames.PACKET_LOSS: [],
+            MetricNames.UTILIZATION_RATE: []
+        }
+        self.performance = Performance(Entities.RESOURCE_CAPACITY, default_performance_metrics)
         self.location = Location(Entities.RESOURCE_CAPACITY, location)
         self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_CAPACITY, historical_behavior)
         self.contextual_fit = ContextualFit(Entities.RESOURCE_CAPACITY, contextual_fit)
@@ -118,7 +150,9 @@ class ResourceCapacity(Stakeholder): # or Resources
 
 class ApplicationProvider(Stakeholder):
 
-    def __init__(self, name: str, did_raw: str, reputation: float, direct_trust: float, compliance: float, location: Coordinates):
+    def __init__(self, name: str, did_raw: str, reputation: float = DEFAULT_ATTRIBUTE_VALUE,
+                 direct_trust: float = DEFAULT_ATTRIBUTE_VALUE, compliance: float = DEFAULT_ATTRIBUTE_VALUE,
+                 location: Coordinates = Coordinates(DEFAULT_ATTRIBUTE_VALUE, DEFAULT_ATTRIBUTE_VALUE)):
 
         super().__init__(name, Entities.APPLICATION_PROVIDER, did_raw, GraphQLQueryFPath.APPLICATION_PROVIDER, reputation, direct_trust)
 

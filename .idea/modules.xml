@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../Trust_Frontend_Microservice/.idea/Trust_Frontend_Microservice.iml" filepath="$PROJECT_DIR$/../Trust_Frontend_Microservice/.idea/Trust_Frontend_Microservice.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/Trust_Managment_System.iml" filepath="$PROJECT_DIR$/.idea/Trust_Managment_System.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../Trust_Metric_Aggregator_Microservice/.idea/Trust_Metric_Aggregator_Microservice.iml" filepath="$PROJECT_DIR$/../Trust_Metric_Aggregator_Microservice/.idea/Trust_Metric_Aggregator_Microservice.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Trust-Evaluator-microservice.iml" filepath="$PROJECT_DIR$/.idea/Trust-Evaluator-microservice.iml" />
     </modules>
   </component>
 </project>
