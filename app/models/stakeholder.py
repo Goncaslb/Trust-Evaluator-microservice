@@ -76,7 +76,7 @@ class Stakeholder(ABC):
     def get_new_attributes(self) -> dict:
         aggregator_url = f"http://{TRUST_METRIC_AGGREGATOR_HOST}:{TRUST_METRIC_AGGREGATOR_PORT}"
         query_abs_fpath = Path(__file__).parent.absolute() / self.graphql_query_fpath
-        query_variables = {"id": str(self.id)}
+        query_variables = {"did": self.did.raw}
         aggregator_data = get_graphql_query_json(aggregator_url, query_abs_fpath, query_variables)
         return aggregator_data
 

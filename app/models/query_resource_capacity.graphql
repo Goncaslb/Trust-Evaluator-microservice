@@ -11,28 +11,28 @@ fragment PerformanceMetricsFields on Performance {
 }
   
 query (
-  $id: String!
+  $did: String!
 ) {
-    performance(stakeholderId: $id) {
+    performance(stakeholderDid: $did) {
         ...PerformanceMetricsFields
     }
-    location(stakeholderId: $id) {
+    location(stakeholderDid: $did) {
         lat
         lon
     }
-    historicalBehavior(stakeholderId: $id) {
+    historicalBehavior(stakeholderDid: $did) {
         trust
     }
-    contextualFit(stakeholderId: $id) {
+    contextualFit(stakeholderDid: $did) {
         trust
     }
-    thirdPartyValidation(stakeholderId: $id) {
+    thirdPartyValidation(stakeholderDid: $did) {
         trust
     }
-    reputation(stakeholderId: $id) {
+    reputation(stakeholderDid: $did) {
         trust
     }
-    directTrust(stakeholderId: $id) {
+    directTrust(stakeholderDid: $did) {
         trust
     }
 }

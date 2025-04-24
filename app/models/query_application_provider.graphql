@@ -1,18 +1,18 @@
 
 query (
-  $id: String!
+  $did: String!
 ) {
-    location(stakeholderId: $id) {
+    location(stakeholderDid: $did) {
         lat
         lon
     }
-    compliance(stakeholderId: $id) {
+    compliance(stakeholderDid: $did) {
         trust
     }
-    reputation(stakeholderId: $id) {
+    reputation(stakeholderDid: $did) {
         trust
     }
-    directTrust(stakeholderId: $id) {
+    directTrust(stakeholderDid: $did) {
         trust
     }
 }
