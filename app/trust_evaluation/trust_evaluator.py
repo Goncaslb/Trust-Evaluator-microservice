@@ -27,8 +27,8 @@ class TrustEvaluator:
             
             # 1) Deterministic part
             # did verification
-            stakeholder.identity_verification.calculate_trust()
-            if stakeholder.identity_verification.trust == 0:
+            stakeholder.identity.calculate_trust()
+            if stakeholder.identity.trust == 0:
                 distrust = 1
             
             # 2) Stochastic part
@@ -59,8 +59,8 @@ class TrustEvaluator:
 
             # 1) Deterministic part
             # did verification
-            stakeholder.identity_verification.calculate_trust()
-            if stakeholder.identity_verification.trust == 0:
+            stakeholder.identity.calculate_trust()
+            if stakeholder.identity.trust == 0:
                 distrust = 1
             
             # location
@@ -111,8 +111,8 @@ class TrustEvaluator:
 
             # 1) Deterministic part
             # did verification
-            stakeholder.identity_verification.calculate_trust()
-            if stakeholder.identity_verification.trust == 0:
+            stakeholder.identity.calculate_trust()
+            if stakeholder.identity.trust == 0:
                 distrust = 1
             
             # location

@@ -22,19 +22,8 @@ def main():
     bad_app_providerH = ApplicationProvider(name="AppProvider_H", did_raw="did:example:326")
 
     # trust evaluator ranges can be defined for example has ranges= {'throughput': (10,400), ...}
-    ranges = {
-        MetricNames.AVAILABILITY: (0, 1),
-        MetricNames.RELIABILITY: (0, 1),
-        MetricNames.ENERGY_EFFICIENCY: (0, 1),
-        MetricNames.LATENCY: (0, 1),
-        MetricNames.THROUGHPUT: (0, 1),
-        MetricNames.BANDWIDTH: (0, 1),
-        MetricNames.JITTER: (0, 1),
-        MetricNames.PACKET_LOSS: (0, 1),
-        MetricNames.UTILIZATION_RATE: (0, 1)
 
-    }
-    evaluator = TrustEvaluator(model=TrustCalcModel.PROBABILISTIC, ranges=ranges) # 'deterministic' or 'probabilistic'
+    evaluator = TrustEvaluator(model=TrustCalcModel.PROBABILISTIC) # 'deterministic' or 'probabilistic'
     stakeholders = [providerA, capacityA, app_providerX, bad_app_providerH]
     
     print("Initial Trust Scores and Evaluation:")
@@ -78,9 +67,6 @@ def main():
 
     
 if __name__ == "__main__":
-    main()
+    #main()
     uvicorn.run(evaluator_app, host="0.0.0.0", port=8001)
 
-
-
-# onthologist? so reestructure the way trust works. dependencies between stakeholders. 

@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from enum import IntEnum
+from enum import IntEnum, StrEnum
 import requests
 from pathlib import Path
 import re
@@ -7,13 +7,23 @@ import numpy as np
 
 from app.models.did import DID
 
-class Entities(IntEnum):
-    """
-    Used for index of AttributeWeights.
-    """
+class StakeholderType(IntEnum):
     RESOURCE_PROVIDER = 0
     RESOURCE_CAPACITY = 1
     APPLICATION_PROVIDER = 2
+    RESOURCE = 3
+    CAPACITY_PROVIDER = 4
+
+class MetricNames(StrEnum):
+    AVAILABILITY = "availability"
+    RELIABILITY = "reliability"
+    ENERGY_EFFICIENCY = "energy_efficiency"
+    LATENCY = "latency"
+    THROUGHPUT = "throughput"
+    BANDWIDTH = "bandwidth"
+    JITTER = "jitter"
+    PACKET_LOSS = "packet_loss"
+    UTILIZATION_RATE = "utilization_rate"
 
 class Coordinates(NamedTuple):
     lat: float

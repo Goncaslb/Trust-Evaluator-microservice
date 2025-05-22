@@ -1,12 +1,12 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Optional
-from app.trust_evaluation.probabilistic import SingleFeatureTrustModel
 import numpy as np
 from enum import Enum, auto
 
-from app.utils.helpers import Coordinates, validate_location, verify_did, Entities, prob_transform
+from app.utils.helpers import Coordinates, validate_location, verify_did, StakeholderType, prob_transform, MetricNames
 from app.models.did import DID
+from app.trust_evaluation.probabilistic import SingleFeatureTrustModel
 
 class AttributeWeights:
    # IDENTITY_VERIFICATION = (0.1, 0.2, 0.3)
@@ -19,11 +19,23 @@ class AttributeWeights:
     CONTEXTUAL_FIT = (0.1, 0.2, 0.3)
     THIRD_PARTY_VALIDATION = (0.1, 0.2, 0.3)
 
+RANGES = {
+        MetricNames.AVAILABILITY: (0, 1),
+        MetricNames.RELIABILITY: (0, 1),
+        MetricNames.ENERGY_EFFICIENCY: (0, 1),
+        MetricNames.LATENCY: (0, 1),
+        MetricNames.THROUGHPUT: (0, 1),
+        MetricNames.BANDWIDTH: (0, 1),
+        MetricNames.JITTER: (0, 1),
+        MetricNames.PACKET_LOSS: (0, 1),
+        MetricNames.UTILIZATION_RATE: (0, 1)
+}
 
 class TrustCalcModel(Enum):
     DETERMINISTIC = auto()
     PROBABILISTIC = auto()
 
+DEFAULT_TRUST_ATTRIBUTE = 0.5
 
 class Attribute(ABC):
     trust: float
@@ -31,16 +43,16 @@ class Attribute(ABC):
 
     def __init__(self, weight: Optional[float] = None):
         self.weight = weight  
-        self.trust = 0.5  # Default trust value(thinking of probabilities)
+        self.trust = DEFAULT_TRUST_ATTRIBUTE  # Default trust value(thinking of probabilities)
 
     @abstractmethod
     def calculate_trust(self):
         pass
 
 
-class IdentityVerification(Attribute):
+class Identity(Attribute):
 
-    def __init__(self, entity: Entities, did: DID):
+    def __init__(self, entity: StakeholderType, did: DID):
         super().__init__()
 
         self.did = did
@@ -55,52 +67,59 @@ class IdentityVerification(Attribute):
 
 class Reputation(Attribute):
 
-    def __init__(self, entity: Entities, trust: Any):
+    def __init__(self, entity: StakeholderType, trust: Optional[Any] = None):
         super().__init__(AttributeWeights.REPUTATION[entity])
 
         self.trust = trust
         pass
 
     def calculate_trust(self):
-        self.trust = self.trust
+        if self.trust is None:
+            self.trust = DEFAULT_TRUST_ATTRIBUTE
 
         
 class DirectTrust(Attribute):
 
-    def __init__(self, entity: Entities, trust: Any):
+    def __init__(self, entity: StakeholderType, trust: Optional[Any] = None):
         super().__init__(AttributeWeights.DIRECT_TRUST[entity])
         self.trust = trust
         pass
 
     def calculate_trust(self):
-        self.trust = self.trust
+        if self.trust is None:
+            self.trust = DEFAULT_TRUST_ATTRIBUTE
+
 
 
 
 class Compliance(Attribute):
 
-    def __init__(self, entity: Entities, trust: Any):
+    def __init__(self, entity: StakeholderType, trust: Optional[Any] = None):
         super().__init__(AttributeWeights.COMPLIANCE[entity])
         self.trust = trust
         pass
 
     def calculate_trust(self):
-        self.trust = self.trust
+        if self.trust is None:
+            self.trust = DEFAULT_TRUST_ATTRIBUTE
+
 
 class HistoricalBehavior(Attribute):
 
-    def __init__(self, entity: Entities, trust: Any):
+    def __init__(self, entity: StakeholderType, trust: Optional[Any] = None):
         super().__init__(AttributeWeights.HISTORICAL_BEHAVIOR[entity])
         self.trust = trust
         pass
 
     def calculate_trust(self):
-        self.trust = self.trust
+        if self.trust is None:
+            self.trust = DEFAULT_TRUST_ATTRIBUTE
+
 
 
 class Performance(Attribute):
 
-    def __init__(self, entity: Entities, metrics: Any):
+    def __init__(self, entity: StakeholderType, metrics: Any):
         super().__init__(AttributeWeights.PERFORMANCE[entity])
 
         self.metrics = metrics
@@ -109,15 +128,16 @@ class Performance(Attribute):
             self.sftm.append(SingleFeatureTrustModel(name=key))
         pass
 
-    def compute_performance(self, model, ranges):
+    def compute_performance(self, model):
 
         if model == TrustCalcModel.DETERMINISTIC:
             normalized_metrics = []
             for metric in self.metrics:
-                minimum, maximum = ranges[metric.name]
-                v_prob = prob_transform(minimum, maximum, metric.value)
-                normalized_metrics.append(v_prob)
-            trust = np.mean(list(self.metrics.values()))
+                for metric_value in metric:
+                    minimum, maximum = RANGES[metric.name]
+                    v_prob = prob_transform(minimum, maximum, metric_value.value)
+                    normalized_metrics.append(v_prob)
+            trust = np.mean(normalized_metrics)
             for key in self.metrics.keys():
                 self.metrics[key] = []
             return trust
@@ -125,8 +145,8 @@ class Performance(Attribute):
         elif model == TrustCalcModel.PROBABILISTIC:
             for m in self.sftm:
                 for v in self.metrics[m.name]:
-                    if m.name in ranges:
-                        minimum, maximum = ranges[m.name]
+                    if m.name in RANGES:
+                        minimum, maximum = RANGES[m.name]
                         v_prob = prob_transform(minimum, maximum, v)
                     else: 
                         v_prob = v
@@ -136,13 +156,13 @@ class Performance(Attribute):
                 self.metrics[key] = []
             return np.mean([m.adjusted_trust_score for m in self.sftm])
 
-    def calculate_trust(self, model: Optional[TrustCalcModel] = None, ranges: Optional[list] = None):
-        self.trust = float(self.compute_performance(model, ranges))
+    def calculate_trust(self, model: Optional[TrustCalcModel] = None):
+        self.trust = float(self.compute_performance(model))
 
 
 class Location(Attribute):
 
-    def __init__(self, entity: Entities, coordinates: Coordinates):
+    def __init__(self, entity: StakeholderType, coordinates: Coordinates):
         super().__init__()
 
         self.coordinates: Coordinates = coordinates
@@ -157,22 +177,26 @@ class Location(Attribute):
 
 class ContextualFit(Attribute):
 
-    def __init__(self, entity: Entities, trust: Any):
+    def __init__(self, entity: StakeholderType, trust: Optional[Any] = None):
         super().__init__(AttributeWeights.CONTEXTUAL_FIT[entity])
         self.trust = trust
         pass
 
     def calculate_trust(self):
-        self.trust = self.trust
+        if self.trust is None:
+            self.trust = DEFAULT_TRUST_ATTRIBUTE
+
 
 
 class ThirdPartyValidation(Attribute):
 
-    def __init__(self, entity: Entities, trust: Any):
+    def __init__(self, entity: StakeholderType, trust: Optional[Any] = None):
         super().__init__(AttributeWeights.THIRD_PARTY_VALIDATION[entity])
         self.trust = trust
         pass
 
     def calculate_trust(self):
-        self.trust = self.trust
+        if self.trust is None:
+            self.trust = DEFAULT_TRUST_ATTRIBUTE
+
 

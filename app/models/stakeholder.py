@@ -1,13 +1,14 @@
 import uuid
-from typing import Any
+from typing import Any, Optional
 from abc import ABC
 from enum import StrEnum
 from pathlib import Path
 
 from .did import DID
-from app.utils.helpers import Coordinates, Entities, get_graphql_query_json, camel_to_snake_case
+from app.utils.helpers import Coordinates, StakeholderType, get_graphql_query_json, camel_to_snake_case
 from app.utils.settings import settings
-from .attributes import IdentityVerification, \
+from app.utils.helpers import MetricNames
+from .attributes import Identity, \
                        Reputation, \
                        DirectTrust, \
                        Compliance, \
@@ -30,18 +31,6 @@ class GraphQLQueryFPath(StrEnum):
     APPLICATION_PROVIDER = "query_application_provider.graphql"
 
 
-class MetricNames(StrEnum):
-    AVAILABILITY = "availability"
-    RELIABILITY = "reliability"
-    ENERGY_EFFICIENCY = "energy_efficiency"
-    LATENCY = "latency"
-    THROUGHPUT = "throughput"
-    BANDWIDTH = "bandwidth"
-    JITTER = "jitter"
-    PACKET_LOSS = "packet_loss"
-    UTILIZATION_RATE = "utilization_rate"
-
-
 class Stakeholder(ABC):
 
     # Each time a new uuid is generated
@@ -50,13 +39,13 @@ class Stakeholder(ABC):
     # Level of trust as a floating point number
     trust: float = INITIAL_TRUST
 
-    def __init__(self, name: str, entity_idx: Entities, did_raw: str, graphql_query_fpath: str, reputation: float, direct_trust: float):
+    def __init__(self, name: str, entity_idx: StakeholderType, did_raw: str, graphql_query_fpath: str, reputation: float, direct_trust: float):
 
         # Name of the stakeholder
         self.name: str = name
 
         # Type of entity converted to an integer (index)
-        self.entity_idx: Entities = entity_idx
+        self.entity_idx: StakeholderType = entity_idx
 
         # Path to the GraphQL query for attributes
         self.graphql_query_fpath: str = graphql_query_fpath
@@ -65,7 +54,7 @@ class Stakeholder(ABC):
         self.did: DID = DID(did_raw)
 
         # 
-        self.identity_verification = IdentityVerification(entity_idx, self.did)
+        self.identity = Identity(entity_idx, self.did)
 
         # 
         self.reputation = Reputation(entity_idx, reputation)
@@ -109,22 +98,22 @@ class ResourceProvider(Stakeholder): # or Resource Capacity provider
                  direct_trust: float = DEFAULT_ATTRIBUTE_VALUE, compliance: float = DEFAULT_ATTRIBUTE_VALUE,
                  historical_behavior: float = DEFAULT_ATTRIBUTE_VALUE):
 
-        super().__init__(name, Entities.RESOURCE_PROVIDER, did_raw, GraphQLQueryFPath.RESOURCE_PROVIDER, reputation, direct_trust)
+        super().__init__(name, StakeholderType.RESOURCE_PROVIDER, did_raw, GraphQLQueryFPath.RESOURCE_PROVIDER, reputation, direct_trust)
 
-        self.compliance = Compliance(Entities.RESOURCE_PROVIDER, compliance)
-        self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_PROVIDER, historical_behavior)
+        self.compliance = Compliance(StakeholderType.RESOURCE_PROVIDER, compliance)
+        self.historical_behavior = HistoricalBehavior(StakeholderType.RESOURCE_PROVIDER, historical_behavior)
 
         self.update_attributes()  # Initialize the trust attributes
 
 class ResourceCapacity(Stakeholder): # or Resources
 
-    def __init__(self, name: str, did_raw: str, provider: ResourceProvider = None,
+    def __init__(self, name: str, did_raw: str, provider: Optional[ResourceProvider] = None,
                  reputation: float = DEFAULT_ATTRIBUTE_VALUE, direct_trust: float = DEFAULT_ATTRIBUTE_VALUE,
                  performance: float = DEFAULT_ATTRIBUTE_VALUE, location: Coordinates = Coordinates(DEFAULT_ATTRIBUTE_VALUE, DEFAULT_ATTRIBUTE_VALUE),
                  historical_behavior: float = DEFAULT_ATTRIBUTE_VALUE, contextual_fit: float = DEFAULT_ATTRIBUTE_VALUE,
                  third_party_validation: float = DEFAULT_ATTRIBUTE_VALUE):
 
-        super().__init__(name, Entities.RESOURCE_CAPACITY, did_raw, GraphQLQueryFPath.RESOURCE_CAPACITY, reputation, direct_trust)
+        super().__init__(name, StakeholderType.RESOURCE_CAPACITY, did_raw, GraphQLQueryFPath.RESOURCE_CAPACITY, reputation, direct_trust)
 
         default_performance_metrics = {
             MetricNames.AVAILABILITY: [],
@@ -137,11 +126,11 @@ class ResourceCapacity(Stakeholder): # or Resources
             MetricNames.PACKET_LOSS: [],
             MetricNames.UTILIZATION_RATE: []
         }
-        self.performance = Performance(Entities.RESOURCE_CAPACITY, default_performance_metrics)
-        self.location = Location(Entities.RESOURCE_CAPACITY, location)
-        self.historical_behavior = HistoricalBehavior(Entities.RESOURCE_CAPACITY, historical_behavior)
-        self.contextual_fit = ContextualFit(Entities.RESOURCE_CAPACITY, contextual_fit)
-        self.third_party_validation = ThirdPartyValidation(Entities.RESOURCE_CAPACITY, third_party_validation)
+        self.performance = Performance(StakeholderType.RESOURCE_CAPACITY, default_performance_metrics)
+        self.location = Location(StakeholderType.RESOURCE_CAPACITY, location)
+        self.historical_behavior = HistoricalBehavior(StakeholderType.RESOURCE_CAPACITY, historical_behavior)
+        self.contextual_fit = ContextualFit(StakeholderType.RESOURCE_CAPACITY, contextual_fit)
+        self.third_party_validation = ThirdPartyValidation(StakeholderType.RESOURCE_CAPACITY, third_party_validation)
 
         self.provider: ResourceProvider = provider  # TODO add as attribute?
 
@@ -154,10 +143,10 @@ class ApplicationProvider(Stakeholder):
                  direct_trust: float = DEFAULT_ATTRIBUTE_VALUE, compliance: float = DEFAULT_ATTRIBUTE_VALUE,
                  location: Coordinates = Coordinates(DEFAULT_ATTRIBUTE_VALUE, DEFAULT_ATTRIBUTE_VALUE)):
 
-        super().__init__(name, Entities.APPLICATION_PROVIDER, did_raw, GraphQLQueryFPath.APPLICATION_PROVIDER, reputation, direct_trust)
+        super().__init__(name, StakeholderType.APPLICATION_PROVIDER, did_raw, GraphQLQueryFPath.APPLICATION_PROVIDER, reputation, direct_trust)
 
-        self.compliance = Compliance(Entities.APPLICATION_PROVIDER, compliance)
-        self.location = Location(Entities.APPLICATION_PROVIDER, location)
+        self.compliance = Compliance(StakeholderType.APPLICATION_PROVIDER, compliance)
+        self.location = Location(StakeholderType.APPLICATION_PROVIDER, location)
 
         self.update_attributes()  # Initialize the trust attributes
 
