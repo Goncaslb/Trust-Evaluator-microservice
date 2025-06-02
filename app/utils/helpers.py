@@ -63,16 +63,43 @@ def verify_did(did: DID):
         print(f"Warning: {did} is not a valid DID")
         return False
 
-def prob_transform(minimum: float, maximum: float, value: float) -> float:
-    if value <= minimum:
-        return 0.0
-    elif value >= maximum:
-        return 1.0
+import numpy as np
+
+def prob_transform(minimum: float, maximum: float, behaviour: float, value: float) -> float:
+    if behaviour == 1:
+        if value <= minimum:
+            return 0.0
+        elif value >= maximum:
+            return 1.0
+        else:
+            # Scale the value to the range [0, 1] using a sigmoid-like function
+            mid = (minimum + maximum) / 2  # Midpoint of the range
+            scale = (maximum - minimum) / 6  # Scale factor for smooth transition
+            return 1 / (1 + np.exp(-(value - mid) / scale))
+    elif behaviour == -1:
+        if value <= minimum:
+            return 1.0  # Minimum or below equals 1 (better)
+        elif value >= maximum:
+            return 0.0  # Maximum or above equals 0 (worse)
+        else:
+            # Scale the value to the range [0, 1] in reverse using a sigmoid-like function
+            mid = (minimum + maximum) / 2
+            scale = (maximum - minimum) / 6
+            return 1 - (1 / (1 + np.exp(-(value - mid) / scale))) # Reverse the sigmoid output
+    elif behaviour == 0:
+        if value <= minimum or value >= maximum:
+            return 0.0  # Outside the limits is 0
+        else:
+            # The closer to the middle point, the better (closer to 1)
+            mid = (minimum + maximum) / 2
+            # Max possible distance from midpoint is (maximum - minimum) / 2
+            max_dist = (maximum - minimum) / 2
+            normalized_value = (value - mid) / max_dist # Scales value to be in [-1, 1] relative to mid
+
+            # Using a simple quadratic decay from the center
+            return max(0.0, 1.0 - normalized_value**2) # Ensures it doesn't go below 0
     else:
-        # Scale the value to the range [0, 1] using a sigmoid-like function
-        mid = (minimum + maximum) / 2  # Midpoint of the range
-        scale = (maximum - minimum) / 6  # Scale factor for smooth transition
-        return 1 / (1 + np.exp(-(value - mid) / scale))
+        raise ValueError("Behaviour must be 1, -1, or 0")
 
 
 def validate_location(location: Coordinates):    

@@ -20,15 +20,15 @@ class AttributeWeights:
     THIRD_PARTY_VALIDATION = (0.1, 0.2, 0.3)
 
 RANGES = {
-        MetricNames.AVAILABILITY: (0, 1),
-        MetricNames.RELIABILITY: (0, 1),
-        MetricNames.ENERGY_EFFICIENCY: (0, 1),
-        MetricNames.LATENCY: (0, 1),
-        MetricNames.THROUGHPUT: (0, 1),
-        MetricNames.BANDWIDTH: (0, 1),
-        MetricNames.JITTER: (0, 1),
-        MetricNames.PACKET_LOSS: (0, 1),
-        MetricNames.UTILIZATION_RATE: (0, 1)
+        MetricNames.AVAILABILITY: (0, 1, 1),
+        MetricNames.RELIABILITY: (0, 1, 1),
+        MetricNames.ENERGY_EFFICIENCY: (0, 1, 1),
+        MetricNames.LATENCY: (0, 1, -1),
+        MetricNames.THROUGHPUT: (0, 1, 1),
+        MetricNames.BANDWIDTH: (0, 1, 1),
+        MetricNames.JITTER: (0, 1, -1),
+        MetricNames.PACKET_LOSS: (0, 1, -1),
+        MetricNames.UTILIZATION_RATE: (0, 1, 1)
 }
 
 class TrustCalcModel(Enum):
@@ -134,8 +134,8 @@ class Performance(Attribute):
             normalized_metrics = []
             for metric in self.metrics:
                 for metric_value in metric:
-                    minimum, maximum = RANGES[metric.name]
-                    v_prob = prob_transform(minimum, maximum, metric_value.value)
+                    minimum, maximum, behavior = RANGES[metric.name]
+                    v_prob = prob_transform(minimum, maximum, behavior, metric_value.value)
                     normalized_metrics.append(v_prob)
             trust = np.mean(normalized_metrics)
             for key in self.metrics.keys():
@@ -146,8 +146,8 @@ class Performance(Attribute):
             for m in self.sftm:
                 for v in self.metrics[m.name]:
                     if m.name in RANGES:
-                        minimum, maximum = RANGES[m.name]
-                        v_prob = prob_transform(minimum, maximum, v)
+                        minimum, maximum, behavior = RANGES[m.name]
+                        v_prob = prob_transform(minimum, maximum, behavior, v)
                     else: 
                         v_prob = v
                     m.observe(v_prob)
