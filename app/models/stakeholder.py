@@ -33,9 +33,6 @@ class GraphQLQueryFPath(StrEnum):
 
 class Stakeholder(ABC):
 
-    # Each time a new uuid is generated
-    id: uuid.UUID = uuid.uuid4()
-
     # Level of trust as a floating point number
     trust: float = INITIAL_TRUST
 

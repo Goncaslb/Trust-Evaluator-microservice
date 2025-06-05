@@ -49,6 +49,7 @@ def get_stakeholder(stakeholder_did: str, session: SessionDep):
     return StakeholderResponse(
         did=stakeholder.did.raw,
         name=stakeholder.name,
+        created_at=stakeholder_model.created_at,
         probabilistic_trust=probabilistic_trust,
         deterministic_trust=deterministic_trust
     )
