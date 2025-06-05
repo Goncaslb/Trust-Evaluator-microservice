@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends, Response, status, HTTPException
 from sqlmodel import select
 from datetime import datetime
 from typing import Optional
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.models.schemas import StakeholderResponse, AllStakeholdersResponse
 from app.utils.helpers import StakeholderType
@@ -13,6 +14,14 @@ from app.trust_evaluation.trust_evaluator import TrustEvaluator
 from app.models.attributes import TrustCalcModel
 
 evaluator_app = FastAPI()
+
+evaluator_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],            # or use ["*"] to allow all origins (not recommended in production)
+    allow_credentials=True,
+    allow_methods=["*"],              # Allows all HTTP methods: GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],              # Allows all headers
+)
 
 
 @evaluator_app.get("/stakeholder/{stakeholder_did}", response_model=StakeholderResponse)

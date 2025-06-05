@@ -155,6 +155,8 @@ class Performance(Attribute):
             for key in self.metrics.keys():
                 self.metrics[key] = []
             return np.mean([m.adjusted_trust_score for m in self.sftm])
+        else:
+            raise
 
     def calculate_trust(self, model: Optional[TrustCalcModel] = None):
         self.trust = float(self.compute_performance(model))
