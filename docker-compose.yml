@@ -1,0 +1,18 @@
+services:
+  # Your Trust Metric Evaluator Microservice
+  evaluator:
+    build:
+      context: . # Build the image from the Dockerfile in the current directory
+      dockerfile: Dockerfile # Specify the Dockerfile name explicitly (though 'Dockerfile' is default)
+    container_name: trust_evaluator_microservice
+    ports:
+      - "8001:8001"
+    env_file: ".env"
+#    depends_on:
+#      - db # Ensures the database container starts before the aggregator
+    networks:
+      - trust_network # Connects to the custom network
+
+networks:
+  trust_network: # Define a custom bridge network for internal communication
+    driver: bridge
