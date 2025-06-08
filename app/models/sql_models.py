@@ -13,6 +13,7 @@ class Stakeholder(SQLModel, table=True):
     type: int
     name: str
     provider: Optional[str] = None
+    metrics_url: Optional[str] = None
 
     identity: str = Field()
     reputation: Optional[float] = None
@@ -26,4 +27,3 @@ class Stakeholder(SQLModel, table=True):
 
     created_at: datetime
 
-    metrics_url: str

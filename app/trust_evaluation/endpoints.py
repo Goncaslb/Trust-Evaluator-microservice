@@ -48,12 +48,12 @@ def get_stakeholder(stakeholder_did: str, session: SessionDep):
     evaluator_probabilistic = TrustEvaluator(model=TrustCalcModel.PROBABILISTIC)
     evaluator_probabilistic.compute_trust(stakeholder)
     evaluator_probabilistic.trust_evaluation(stakeholder)
-    probabilistic_trust = stakeholder.trust
+    probabilistic_trust = round(stakeholder.trust * 100)
 
     evaluator_deterministic = TrustEvaluator(model=TrustCalcModel.DETERMINISTIC)
     evaluator_deterministic.compute_trust(stakeholder)
     evaluator_deterministic.trust_evaluation(stakeholder)
-    deterministic_trust = stakeholder.trust
+    deterministic_trust = round(stakeholder.trust * 100)
 
     return StakeholderResponse(
         did=stakeholder.did.raw,
@@ -86,8 +86,8 @@ def insert_new_stakeholder(
         stakeholder_did: str,
         stakeholder_type: int,
         name: str,
-        metrics_url: str,
-        provider: Optional[str] = None
+        provider: Optional[str] = None,
+        metrics_url: Optional[str] = None
 ):
 
     new_stakeholder = Stakeholder(
@@ -95,6 +95,7 @@ def insert_new_stakeholder(
         type=stakeholder_type,
         name=name,
         provider=provider,
+        metrics_url=metrics_url,
         identity="vc",
         reputation=0.5,
         direct_trust=0.6,
@@ -104,8 +105,7 @@ def insert_new_stakeholder(
         location_lon=46.7,
         contextual_fit=0.2,
         third_party_validation=0.9,
-        created_at=datetime.now(),
-        metrics_url=metrics_url
+        created_at=datetime.now()
     )
     session.add(new_stakeholder)
     session.commit()
