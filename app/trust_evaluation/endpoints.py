@@ -123,7 +123,15 @@ def remove_stakeholder(session: SessionDep, stakeholder_did: str):
 
     if target_stakeholder is None:
         raise HTTPException(status_code=404, detail="No such stakeholder.")
-
+    print(f"Removing stakeholder Did: {target_stakeholder.did}, Name: {target_stakeholder.name}")
+    if target_stakeholder.type == StakeholderType.RESOURCE_PROVIDER or target_stakeholder.type == StakeholderType.CAPACITY_PROVIDER:
+        # we need to remove the resources as well but remember some reources have null providers
+        resources = session.exec(
+            select(Stakeholder).where(Stakeholder.provider == target_stakeholder.did)
+        ).all()
+        for resource in resources:
+            print(f"Removing resource Did: {resource.did}, Name: {resource.name}")
+            session.delete(resource)
     session.delete(target_stakeholder)
     session.commit()
 
