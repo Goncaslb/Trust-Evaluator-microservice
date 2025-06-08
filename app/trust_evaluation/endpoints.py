@@ -86,8 +86,8 @@ def insert_new_stakeholder(
         stakeholder_did: str,
         stakeholder_type: int,
         name: str,
-        provider: Optional[str] = None,
-        metrics_url: Optional[str] = None
+        metrics_url: Optional[str] = None,
+        provider: Optional[str] = None
 ):
 
     new_stakeholder = Stakeholder(
