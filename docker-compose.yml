@@ -14,5 +14,5 @@ services:
       - trust_network # Connects to the custom network
 
 networks:
-  trust_network: # Define a custom bridge network for internal communication
-    driver: bridge
+  trust_network:
+    external: true
