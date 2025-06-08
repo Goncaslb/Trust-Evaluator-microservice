@@ -118,7 +118,7 @@ def insert_new_stakeholder(
 def remove_stakeholder(session: SessionDep, stakeholder_did: str):
     target_stakeholder = session.exec(
         select(Stakeholder)
-        .where(Stakeholder.id == stakeholder_did)
+        .where(Stakeholder.did == stakeholder_did)
     ).one_or_none()
 
     if target_stakeholder is None:
