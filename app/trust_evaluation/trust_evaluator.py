@@ -6,10 +6,9 @@ from app.models.stakeholder import ResourceProvider, ResourceCapacity, Applicati
 
 class TrustEvaluator:
     
-    def __init__(self, model, ranges = None):
+    def __init__(self, model):
         self.trusted_stakeholders = []
         self.model = model
-        self.ranges = ranges
 
     def get_trusted_stakeholders(self):
 
@@ -20,6 +19,8 @@ class TrustEvaluator:
         attributes_trust = []
         weights = []
         distrust = 0
+
+        stakeholder.update_attributes()  # Update/initialize attributes on trust
 
         if isinstance(stakeholder, ResourceProvider):
             # stakeholder.update_attributes()
@@ -75,7 +76,7 @@ class TrustEvaluator:
             # 2) Stochastic part
             
             # performance metrics
-            stakeholder.performance.calculate_trust(self.model, self.ranges)
+            stakeholder.performance.calculate_trust(self.model)
             weights.append(stakeholder.performance.weight)
             attributes_trust.append(stakeholder.performance.trust)
 

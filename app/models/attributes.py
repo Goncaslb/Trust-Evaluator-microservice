@@ -132,10 +132,10 @@ class Performance(Attribute):
 
         if model == TrustCalcModel.DETERMINISTIC:
             normalized_metrics = []
-            for metric in self.metrics:
-                for metric_value in metric:
-                    minimum, maximum, behavior = RANGES[metric.name]
-                    v_prob = prob_transform(minimum, maximum, behavior, metric_value.value)
+            for metric_key in self.metrics.keys():
+                for metric_value in self.metrics[metric_key]:
+                    minimum, maximum, behavior = RANGES[metric_key]
+                    v_prob = prob_transform(minimum, maximum, behavior, metric_value)
                     normalized_metrics.append(v_prob)
             trust = np.mean(normalized_metrics)
             for key in self.metrics.keys():

@@ -100,7 +100,7 @@ class ResourceProvider(Stakeholder): # or Resource Capacity provider
         self.compliance = Compliance(StakeholderType.RESOURCE_PROVIDER, compliance)
         self.historical_behavior = HistoricalBehavior(StakeholderType.RESOURCE_PROVIDER, historical_behavior)
 
-        self.update_attributes()  # Initialize the trust attributes
+        # self.update_attributes()  # Initialize the trust attributes
 
 class ResourceCapacity(Stakeholder): # or Resources
 
@@ -129,9 +129,9 @@ class ResourceCapacity(Stakeholder): # or Resources
         self.contextual_fit = ContextualFit(StakeholderType.RESOURCE_CAPACITY, contextual_fit)
         self.third_party_validation = ThirdPartyValidation(StakeholderType.RESOURCE_CAPACITY, third_party_validation)
 
-        self.provider: ResourceProvider = provider  # TODO add as attribute?
+        self.provider: ResourceProvider = provider
 
-        self.update_attributes()  # Initialize the trust attributes
+        # self.update_attributes()  # Initialize the trust attributes
 
 
 class ApplicationProvider(Stakeholder):
@@ -145,5 +145,5 @@ class ApplicationProvider(Stakeholder):
         self.compliance = Compliance(StakeholderType.APPLICATION_PROVIDER, compliance)
         self.location = Location(StakeholderType.APPLICATION_PROVIDER, location)
 
-        self.update_attributes()  # Initialize the trust attributes
+        # self.update_attributes()  # Initialize the trust attributes
 
