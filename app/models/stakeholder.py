@@ -21,6 +21,8 @@ from .attributes import Identity, \
 
 INITIAL_TRUST = 0
 DEFAULT_ATTRIBUTE_VALUE = 1
+DEFAULT_LONGITUDE = 15.0
+DEFAULT_LATITUDE = 46.0
 
 TRUST_METRIC_AGGREGATOR_HOST = settings.trust_metric_aggregator_host
 TRUST_METRIC_AGGREGATOR_PORT = settings.trust_metric_aggregator_port
@@ -71,6 +73,9 @@ class Stakeholder(ABC):
         Used for updating attributes.
         """
         new_trust_attributes = self.get_new_attributes()
+        if new_trust_attributes is None:
+            print(f"No trust attributes returned for stakeholder {self.did.raw}. Skipping update.")
+            return
 
         # Iterate and determine new values of attributes of trust attributes
         # Important: attributes (in snake case) must have the same name as GraphQL attributes (in camel case)
@@ -106,7 +111,7 @@ class ResourceCapacity(Stakeholder): # or Resources
 
     def __init__(self, name: str, did_raw: str, provider: Optional[ResourceProvider] = None,
                  reputation: float = DEFAULT_ATTRIBUTE_VALUE, direct_trust: float = DEFAULT_ATTRIBUTE_VALUE,
-                 performance: float = DEFAULT_ATTRIBUTE_VALUE, location: Coordinates = Coordinates(DEFAULT_ATTRIBUTE_VALUE, DEFAULT_ATTRIBUTE_VALUE),
+                 performance: float = DEFAULT_ATTRIBUTE_VALUE, location: Coordinates = Coordinates(DEFAULT_LATITUDE, DEFAULT_LONGITUDE),
                  historical_behavior: float = DEFAULT_ATTRIBUTE_VALUE, contextual_fit: float = DEFAULT_ATTRIBUTE_VALUE,
                  third_party_validation: float = DEFAULT_ATTRIBUTE_VALUE):
 
@@ -138,7 +143,7 @@ class ApplicationProvider(Stakeholder):
 
     def __init__(self, name: str, did_raw: str, reputation: float = DEFAULT_ATTRIBUTE_VALUE,
                  direct_trust: float = DEFAULT_ATTRIBUTE_VALUE, compliance: float = DEFAULT_ATTRIBUTE_VALUE,
-                 location: Coordinates = Coordinates(DEFAULT_ATTRIBUTE_VALUE, DEFAULT_ATTRIBUTE_VALUE)):
+                 location: Coordinates = Coordinates(DEFAULT_LATITUDE, DEFAULT_LONGITUDE)):
 
         super().__init__(name, StakeholderType.APPLICATION_PROVIDER, did_raw, GraphQLQueryFPath.APPLICATION_PROVIDER, reputation, direct_trust)
 

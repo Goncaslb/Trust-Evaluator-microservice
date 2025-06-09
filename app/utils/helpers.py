@@ -31,23 +31,21 @@ class Coordinates(NamedTuple):
 
 
 def get_graphql_query_json(graphql_server_url: str, query_fpath: Path, variables: dict) -> dict:
-
     with open(query_fpath, 'r') as query_file:
         query = query_file.read()
-
-    # headers = {
-    #     'Content-Type': 'application/json',
-    #     'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
-    # }
-
-    response = requests.post(
-        f"{graphql_server_url}/graphql",
-        json={'query': query, 'variables': variables},
-        # headers=headers
-    )
-    response.raise_for_status()
-    graphql_data = response.json()["data"]
-    return graphql_data
+    try:
+        response = requests.post(
+            f"{graphql_server_url}/graphql",
+            json={'query': query, 'variables': variables},
+        )
+        response.raise_for_status()
+        graphql_data = response.json().get("data")
+        if graphql_data is None:
+            print(f"GraphQL response missing 'data': {response.text}")
+        return graphql_data
+    except Exception as e:
+        print(f"Error in get_graphql_query_json: {e}")
+        return None
 
 def camel_to_snake_case(camel_case_string: str) -> str:
     """
@@ -116,7 +114,7 @@ def validate_location(location: Coordinates):
 
     min_lat, max_lat = 45.42, 46.88 
     min_lon, max_lon = 13.38, 16.60
-
+    print(f"Validating location: lat={lat}, lon={lon}")
     # Check if the coordinates are within the boundaries
     if min_lat <= lat <= max_lat:
         if min_lon <= lon <= max_lon:

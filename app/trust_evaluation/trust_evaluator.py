@@ -30,6 +30,7 @@ class TrustEvaluator:
             # did verification
             stakeholder.identity.calculate_trust()
             if stakeholder.identity.trust == 0:
+                print(f"{stakeholder.name}: distrust due to identity")
                 distrust = 1
             
             # 2) Stochastic part
@@ -62,15 +63,17 @@ class TrustEvaluator:
             # did verification
             stakeholder.identity.calculate_trust()
             if stakeholder.identity.trust == 0:
+                print(f"{stakeholder.name}: distrust due to identity")
                 distrust = 1
             
-            # location
             stakeholder.location.calculate_trust()
             if stakeholder.location.trust == 0:
+                print(f"{stakeholder.name}: distrust due to location")
                 distrust = 1
             
             # provider trust
             if not any(stakeholder.provider.did == trusted[1] for trusted in self.trusted_stakeholders):
+                print(f"{stakeholder.name}: distrust due to provider not trusted (provider did: {stakeholder.provider.did})")
                 distrust = 1
             
             # 2) Stochastic part
@@ -114,11 +117,12 @@ class TrustEvaluator:
             # did verification
             stakeholder.identity.calculate_trust()
             if stakeholder.identity.trust == 0:
+                print(f"{stakeholder.name}: distrust due to identity")
                 distrust = 1
             
-            # location
             stakeholder.location.calculate_trust()
             if stakeholder.location.trust == 0:
+                print(f"{stakeholder.name}: distrust due to location")
                 distrust = 1
             
             # 2) Stochastic part

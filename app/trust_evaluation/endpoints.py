@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Depends, Response, status, HTTPException
 from sqlmodel import select
 from datetime import datetime
@@ -26,31 +25,35 @@ evaluator_app.add_middleware(
 
 @evaluator_app.get("/stakeholder/{stakeholder_did}", response_model=StakeholderResponse)
 def get_stakeholder(stakeholder_did: str, session: SessionDep):
-
     stakeholder_model = session.get(Stakeholder, stakeholder_did)
 
+    # Prepare a local TrustEvaluator instance
+    evaluator_probabilistic = TrustEvaluator(model=TrustCalcModel.PROBABILISTIC)
+    evaluator_deterministic = TrustEvaluator(model=TrustCalcModel.DETERMINISTIC)
+
+    # If resource/resource capacity, evaluate provider first and add to trusted list
     if stakeholder_model.type == StakeholderType.RESOURCE_PROVIDER or stakeholder_model.type == StakeholderType.CAPACITY_PROVIDER:
         stakeholder = ResourceProvider(name=stakeholder_model.name, did_raw=stakeholder_did)
-
     elif stakeholder_model.type == StakeholderType.RESOURCE_CAPACITY or stakeholder_model.type == StakeholderType.RESOURCE:
         provider = session.get(Stakeholder, stakeholder_model.provider)
         provider_obj = ResourceProvider(name=provider.name, did_raw=provider.did)
+        # Evaluate provider and add to trusted list if trusted
+        evaluator_probabilistic.compute_trust(provider_obj)
+        evaluator_probabilistic.trust_evaluation(provider_obj)
+        evaluator_deterministic.compute_trust(provider_obj)
+        evaluator_deterministic.trust_evaluation(provider_obj)
         stakeholder = ResourceCapacity(name=stakeholder_model.name, did_raw=stakeholder_did, provider=provider_obj)
-
     elif stakeholder_model.type == StakeholderType.APPLICATION_PROVIDER:
         stakeholder = ApplicationProvider(name=stakeholder_model.name, did_raw=stakeholder_did)
-
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Incorrect stakeholder type."
         )
 
-    evaluator_probabilistic = TrustEvaluator(model=TrustCalcModel.PROBABILISTIC)
     evaluator_probabilistic.compute_trust(stakeholder)
     evaluator_probabilistic.trust_evaluation(stakeholder)
     probabilistic_trust = round(stakeholder.trust * 100)
 
-    evaluator_deterministic = TrustEvaluator(model=TrustCalcModel.DETERMINISTIC)
     evaluator_deterministic.compute_trust(stakeholder)
     evaluator_deterministic.trust_evaluation(stakeholder)
     deterministic_trust = round(stakeholder.trust * 100)
@@ -66,10 +69,19 @@ def get_stakeholder(stakeholder_did: str, session: SessionDep):
 
 @evaluator_app.get("/stakeholders", response_model=AllStakeholdersResponse)
 def get_all_stakeholders(session: SessionDep):
-
     all_stakeholders_model = session.exec(
         select(Stakeholder)
     ).all()
+
+    # Sort: providers first, then resource capacities/resources, then others
+    # def sort_key(stakeholder_model):
+    #     if stakeholder_model.type in [StakeholderType.RESOURCE_PROVIDER, StakeholderType.CAPACITY_PROVIDER]:
+    #         return 0
+    #     elif stakeholder_model.type in [StakeholderType.RESOURCE_CAPACITY, StakeholderType.RESOURCE]:
+    #         return 1
+    #     else:
+    #         return 2
+    # all_stakeholders_model.sort(key=sort_key)
 
     print(all_stakeholders_model)
 
@@ -89,7 +101,9 @@ def insert_new_stakeholder(
         metrics_url: Optional[str] = None,
         provider: Optional[str] = None
 ):
-
+    # Use valid Slovenian coordinates
+    slovenia_lat = 46.0
+    slovenia_lon = 15.0
     new_stakeholder = Stakeholder(
         did=stakeholder_did,
         type=stakeholder_type,
@@ -101,8 +115,8 @@ def insert_new_stakeholder(
         direct_trust=0.6,
         compliance=0.7,
         historical_behavior=0.3,
-        location_lat=15.3,
-        location_lon=46.7,
+        location_lat=slovenia_lat,
+        location_lon=slovenia_lon,
         contextual_fit=0.2,
         third_party_validation=0.9,
         created_at=datetime.now()
