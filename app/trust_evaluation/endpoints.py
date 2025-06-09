@@ -3,6 +3,7 @@ from sqlmodel import select
 from datetime import datetime
 from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
+from random import random
 
 from app.models.schemas import StakeholderResponse, AllStakeholdersResponse
 from app.utils.helpers import StakeholderType
@@ -67,7 +68,7 @@ def get_stakeholder(stakeholder_did: str, session: SessionDep):
     )
 
 
-@evaluator_app.get("/stakeholders", response_model=AllStakeholdersResponse)
+@evaluator_app.get("/all_stakeholders", response_model=AllStakeholdersResponse)
 def get_all_stakeholders(session: SessionDep):
     all_stakeholders_model = session.exec(
         select(Stakeholder)
@@ -92,12 +93,39 @@ def get_all_stakeholders(session: SessionDep):
         ]
     )
 
+@evaluator_app.get("/stakeholders/{owner_did}", response_model=AllStakeholdersResponse)
+def get_stakeholders_from_owner(owner_did:str, session: SessionDep):
+    all_stakeholders_model = session.exec(
+        select(Stakeholder)
+    ).all()
+
+    # Sort: providers first, then resource capacities/resources, then others
+    # def sort_key(stakeholder_model):
+    #     if stakeholder_model.type in [StakeholderType.RESOURCE_PROVIDER, StakeholderType.CAPACITY_PROVIDER]:
+    #         return 0
+    #     elif stakeholder_model.type in [StakeholderType.RESOURCE_CAPACITY, StakeholderType.RESOURCE]:
+    #         return 1
+    #     else:
+    #         return 2
+    # all_stakeholders_model.sort(key=sort_key)
+
+    print(all_stakeholders_model)
+
+    return AllStakeholdersResponse(
+        stakeholders=[
+            get_stakeholder(stakeholder_model.did, session)
+            for stakeholder_model in all_stakeholders_model
+            if stakeholder_model.owner == owner_did
+        ]
+    )
+
 @evaluator_app.post("/stakeholder/{stakeholder_did}", response_model=StakeholderResponse)
 def insert_new_stakeholder(
         session: SessionDep,
         stakeholder_did: str,
         stakeholder_type: int,
         name: str,
+        owner: str,
         metrics_url: Optional[str] = None,
         provider: Optional[str] = None
 ):
@@ -111,15 +139,16 @@ def insert_new_stakeholder(
         provider=provider,
         metrics_url=metrics_url,
         identity="vc",
-        reputation=0.5,
-        direct_trust=0.6,
-        compliance=0.7,
-        historical_behavior=0.3,
+        reputation=random(),
+        direct_trust=random(),
+        compliance=random(),
+        historical_behavior=random(),
         location_lat=slovenia_lat,
         location_lon=slovenia_lon,
-        contextual_fit=0.2,
-        third_party_validation=0.9,
-        created_at=datetime.now()
+        contextual_fit=random(),
+        third_party_validation=random(),
+        created_at=datetime.now(),
+        owner=owner
     )
     session.add(new_stakeholder)
     session.commit()

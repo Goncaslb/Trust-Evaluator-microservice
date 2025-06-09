@@ -25,10 +25,6 @@ class MetricNames(StrEnum):
     PACKET_LOSS = "packet_loss"
     UTILIZATION_RATE = "utilization_rate"
 
-class Coordinates(NamedTuple):
-    lat: float
-    lon: float
-
 
 def get_graphql_query_json(graphql_server_url: str, query_fpath: Path, variables: dict) -> dict:
     with open(query_fpath, 'r') as query_file:
@@ -100,17 +96,13 @@ def prob_transform(minimum: float, maximum: float, behaviour: float, value: floa
         raise ValueError("Behaviour must be 1, -1, or 0")
 
 
-def validate_location(location: Coordinates):    
+def validate_location(lat: float, lon: float):
     """
     Validates if the given coordinates are within Slovenian territory.
-
-    Args:
-        location (tuple): A tuple containing latitude and longitude (lat, lon).
 
     Returns:
         bool: True if the location is within Slovenia, False otherwise.
     """
-    lat, lon = location
 
     min_lat, max_lat = 45.42, 46.88 
     min_lon, max_lon = 13.38, 16.60

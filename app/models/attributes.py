@@ -4,7 +4,7 @@ from typing import Any, Optional
 import numpy as np
 from enum import Enum, auto
 
-from app.utils.helpers import Coordinates, validate_location, verify_did, StakeholderType, prob_transform, MetricNames
+from app.utils.helpers import validate_location, verify_did, StakeholderType, prob_transform, MetricNames
 from app.models.did import DID
 from app.trust_evaluation.probabilistic import SingleFeatureTrustModel
 
@@ -164,14 +164,15 @@ class Performance(Attribute):
 
 class Location(Attribute):
 
-    def __init__(self, entity: StakeholderType, coordinates: Coordinates):
+    def __init__(self, entity: StakeholderType, lat: float, lon: float):
         super().__init__()
 
-        self.coordinates: Coordinates = coordinates
+        self.lat: float = lat
+        self.lon: float = lon
         pass
 
     def calculate_trust(self):
-        if validate_location(self.coordinates):
+        if validate_location(self.lat, self.lon):
             self.trust = 1
         else:
             self.trust = 0

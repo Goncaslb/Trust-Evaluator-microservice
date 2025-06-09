@@ -5,7 +5,7 @@ from enum import StrEnum
 from pathlib import Path
 
 from .did import DID
-from app.utils.helpers import Coordinates, StakeholderType, get_graphql_query_json, camel_to_snake_case
+from app.utils.helpers import StakeholderType, get_graphql_query_json, camel_to_snake_case
 from app.utils.settings import settings
 from app.utils.helpers import MetricNames
 from .attributes import Identity, \
@@ -111,7 +111,7 @@ class ResourceCapacity(Stakeholder): # or Resources
 
     def __init__(self, name: str, did_raw: str, provider: Optional[ResourceProvider] = None,
                  reputation: float = DEFAULT_ATTRIBUTE_VALUE, direct_trust: float = DEFAULT_ATTRIBUTE_VALUE,
-                 performance: float = DEFAULT_ATTRIBUTE_VALUE, location: Coordinates = Coordinates(DEFAULT_LATITUDE, DEFAULT_LONGITUDE),
+                 performance: float = DEFAULT_ATTRIBUTE_VALUE, lat: float = DEFAULT_LATITUDE, lon: float = DEFAULT_LONGITUDE,
                  historical_behavior: float = DEFAULT_ATTRIBUTE_VALUE, contextual_fit: float = DEFAULT_ATTRIBUTE_VALUE,
                  third_party_validation: float = DEFAULT_ATTRIBUTE_VALUE):
 
@@ -129,7 +129,7 @@ class ResourceCapacity(Stakeholder): # or Resources
             MetricNames.UTILIZATION_RATE: []
         }
         self.performance = Performance(StakeholderType.RESOURCE_CAPACITY, default_performance_metrics)
-        self.location = Location(StakeholderType.RESOURCE_CAPACITY, location)
+        self.location = Location(StakeholderType.APPLICATION_PROVIDER, lat, lon)
         self.historical_behavior = HistoricalBehavior(StakeholderType.RESOURCE_CAPACITY, historical_behavior)
         self.contextual_fit = ContextualFit(StakeholderType.RESOURCE_CAPACITY, contextual_fit)
         self.third_party_validation = ThirdPartyValidation(StakeholderType.RESOURCE_CAPACITY, third_party_validation)
@@ -143,12 +143,12 @@ class ApplicationProvider(Stakeholder):
 
     def __init__(self, name: str, did_raw: str, reputation: float = DEFAULT_ATTRIBUTE_VALUE,
                  direct_trust: float = DEFAULT_ATTRIBUTE_VALUE, compliance: float = DEFAULT_ATTRIBUTE_VALUE,
-                 location: Coordinates = Coordinates(DEFAULT_LATITUDE, DEFAULT_LONGITUDE)):
+                 lat: float = DEFAULT_LATITUDE, lon: float = DEFAULT_LONGITUDE):
 
         super().__init__(name, StakeholderType.APPLICATION_PROVIDER, did_raw, GraphQLQueryFPath.APPLICATION_PROVIDER, reputation, direct_trust)
 
         self.compliance = Compliance(StakeholderType.APPLICATION_PROVIDER, compliance)
-        self.location = Location(StakeholderType.APPLICATION_PROVIDER, location)
+        self.location = Location(StakeholderType.APPLICATION_PROVIDER, lat, lon)
 
         # self.update_attributes()  # Initialize the trust attributes
 
